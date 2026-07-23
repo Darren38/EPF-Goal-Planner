@@ -97,8 +97,9 @@ body{
   margin:0;color:var(--text);
 }
 .bignum em{font-style:normal;color:var(--jade)}
-.answer-note{margin-top:14px;color:var(--text-dim);font-size:14px;max-width:62ch}
+.answer-note{margin-top:14px;color:var(--text-dim);font-size:14px}
 .answer-note strong{color:var(--text);font-weight:600}
+.answer-note b{color:var(--text);font-weight:600}
 
 /* ---------- layout ---------- */
 .deck{
@@ -156,6 +157,11 @@ body{
 }
 .inputrow input:focus{outline:none}
 .inputrow:focus-within{border-color:var(--jade);box-shadow:0 0 0 2px color-mix(in srgb,var(--jade) 25%,transparent)}
+.inputrow select{
+  flex:1;min-width:0;background:transparent;border:0;color:var(--text);
+  font-family:"IBM Plex Mono",monospace;font-size:13.5px;padding:10px 8px;cursor:pointer;
+}
+.inputrow select:focus{outline:none}
 .inputrow input[type=text]{font-family:"IBM Plex Sans",sans-serif;font-size:14px;font-weight:500}
 .inputrow input[type=text]::placeholder{color:var(--text-dim);font-weight:400}
 .inputrow input[type=date]{
@@ -257,6 +263,12 @@ html[data-theme="light"] .ratemodes button.on{color:#fff}
 .dim{opacity:.4;pointer-events:none}
 
 /* ---------- history chart ---------- */
+.histlegend{display:flex;gap:20px;flex-wrap:wrap;margin-top:12px}
+.histlegend span{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-dim)}
+.lsw{display:inline-block;width:20px;height:0;flex:0 0 auto}
+.lsw.solid{border-top:2.5px solid var(--jade)}
+.lsw.dash{border-top:2.5px dashed var(--warn)}
+.lsw.dot{border-top:2.5px dotted var(--brass)}
 .histcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px;margin-top:28px}
 .histhead{display:flex;justify-content:space-between;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:6px}
 .histhead h3{font-family:"Bricolage Grotesque",sans-serif;font-size:17px;font-weight:600;margin:0;letter-spacing:-.01em}
@@ -366,9 +378,11 @@ html[data-theme="light"] .chip.on{color:#fff}
 .ledger{margin-top:34px}
 .ledger h2{
   font-family:"Bricolage Grotesque",sans-serif;font-size:20px;font-weight:600;
-  letter-spacing:-.01em;margin:0 0 4px;
+  letter-spacing:-.01em;margin:0;white-space:nowrap;
 }
-.ledger p.lede{color:var(--text-dim);font-size:13.5px;margin:0 0 16px;max-width:66ch}
+.ledgerhead{display:grid;grid-template-columns:auto 1fr;gap:6px 28px;align-items:baseline;margin-bottom:16px}
+@media(max-width:760px){.ledgerhead{grid-template-columns:1fr}.ledger h2{white-space:normal}}
+.ledger p.lede{color:var(--text-dim);font-size:13.5px;margin:0 0 16px}
 .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius)}
 table{border-collapse:collapse;width:100%;min-width:640px;background:var(--surface)}
 th,td{
@@ -386,12 +400,34 @@ td.d{color:var(--brass)}
 td.c{color:var(--text-dim)}
 
 /* ---------- notes ---------- */
+.eqgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:22px}
+@media(max-width:820px){.eqgrid{grid-template-columns:1fr}}
+.eqcard{border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);overflow:hidden}
+.eqcard .cap{
+  font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--text-dim);padding:10px 14px 0;
+}
+.notegrid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:1px;
+  background:var(--line);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;
+}
+.note{background:var(--surface);padding:15px 17px}
+.note h4{
+  font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--jade);margin:0 0 6px;font-weight:600;
+}
+.note p{margin:0;font-size:12.5px;color:var(--text-mid);line-height:1.55}
+.note p b{color:var(--text);font-weight:600}
+.notewarn{
+  margin-top:14px;padding:12px 15px;border-radius:var(--radius);
+  border:1px solid var(--warn);color:var(--warn);font-size:13px;
+}
 .notes{margin-top:34px;border-top:1px solid var(--line);padding-top:22px}
 .notes h3{
   font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.16em;
   text-transform:uppercase;color:var(--text-dim);font-weight:500;margin:0 0 12px;
 }
-.notes ul{margin:0;padding-left:18px;color:var(--text-dim);font-size:13.5px;max-width:78ch}
+.notes ul{margin:0;padding-left:18px;color:var(--text-dim);font-size:13.5px}
 .notes li{margin-bottom:8px}
 .notes strong{color:var(--text)}
 .eq{
@@ -402,6 +438,21 @@ td.c{color:var(--text-dim)}
 .eq sub{font-size:.72em;vertical-align:-.25em}
 .eq sup{font-size:.72em;vertical-align:.45em}
 .flag{color:var(--warn);font-weight:600}
+
+/* ---------- justified prose ---------- */
+.answer-note,
+.ledger p.lede,
+.histcard #histlede,
+.note p,
+.step p,
+.watch,
+.guidebody > .steps + .keycol + .watch{
+  text-align:justify;
+  text-align-last:left;
+  hyphens:auto;
+  -webkit-hyphens:auto;
+  overflow-wrap:break-word;
+}
 
 @media (prefers-reduced-motion: reduce){
   *{transition:none !important;animation:none !important}
@@ -441,26 +492,30 @@ td.c{color:var(--text-dim)}
           <p>Enter your <b>current EPF balance</b> and the date you want to count from. Everything else builds on those two.</p>
         </div></div>
         <div class="step"><div class="n">2</div><div>
+          <h4>Add a bonus or a top-up</h4>
+          <p>The yearly extra is a single payment, not a monthly one. A <b>bonus</b> counts as wages, so both you and your employer contribute on it. A <b>voluntary top-up</b> is entirely your own money. Pick the month it lands in, because a payment in January earns almost a full year of dividend and one in December earns none.</p>
+        </div></div>
+        <div class="step"><div class="n">3</div><div>
           <h4>Choose where the money comes from</h4>
           <p><b>From my salary</b> splits the contribution into your share and your employer's: enter your monthly wage, then the percentage each side pays. <b>Fixed amount</b> is for anyone paying in themselves, such as i-Saraan or voluntary contributions, where there is no employer share.</p>
         </div></div>
-        <div class="step"><div class="n">3</div><div>
+        <div class="step"><div class="n">4</div><div>
           <h4>Enter both percentages</h4>
           <p>Type your own share and your employer's share directly. The statutory figures are noted under each field. If you would rather not track the wage band yourself, tick <b>Set this for me</b> and the employer share follows 13% up to RM5,000 and 12% above, re-checked each year so a raise past the threshold drops it on its own.</p>
         </div></div>
-        <div class="step"><div class="n">4</div><div>
+        <div class="step"><div class="n">5</div><div>
           <h4>Pick a dividend basis</h4>
           <p><b>Fixed</b> uses one rate you choose. <b>Historical average</b> uses the mean of past declared rates. <b>Trend line</b> fits a line to history. <b>Replay history</b> loops real past rates forward so you can test a bad run.</p>
         </div></div>
-        <div class="step"><div class="n">5</div><div>
+        <div class="step"><div class="n">6</div><div>
           <h4>Read the answer</h4>
           <p>The big number is <b>how long</b> it takes. The <b>Target reached</b> tile gives the date, and you can show it as an exact day, a month, or just a year.</p>
         </div></div>
-        <div class="step"><div class="n">6</div><div>
+        <div class="step"><div class="n">7</div><div>
           <h4>Read the chart</h4>
           <p>Each bar is one calendar year. Hover any bar for its closing balance. The first bar is usually a part year running from your start date to 31 December.</p>
         </div></div>
-        <div class="step"><div class="n">7</div><div>
+        <div class="step"><div class="n">8</div><div>
           <h4>Adjust and compare</h4>
           <p>Every field has a slider. Drag one and everything updates instantly, so you can see how much a bigger contribution actually buys you.</p>
         </div></div>
@@ -576,14 +631,35 @@ td.c{color:var(--text-dim)}
         </div>
 
         <div class="field subfield">
-          <label for="topup">Voluntary top-up on my own</label>
+          <label>Yearly extra payment</label>
+          <div class="seg-ctrl" id="lumpkind" style="margin-bottom:8px">
+            <button type="button" class="on" data-l="topup">Voluntary top-up</button>
+            <button type="button" data-l="bonus">Bonus</button>
+          </div>
           <div class="inputrow">
             <span class="pre">RM</span>
-            <input id="topup" type="number" value="0" min="0" step="50" inputmode="decimal">
+            <input id="lump" type="number" value="0" min="0" step="500" inputmode="decimal">
           </div>
-          <input class="rng" id="topup-r" type="range" min="0" max="5000" step="50" value="0" aria-label="Voluntary top-up slider">
-          <div class="scale"><span>RM0</span><span>RM5,000</span></div>
+          <input class="rng" id="lump-r" type="range" min="0" max="120000" step="500" value="0" aria-label="Yearly extra payment slider">
+          <div class="scale"><span>RM0</span><span>RM120,000</span></div>
+          <div class="hint" id="lumphint"></div>
         </div>
+
+        <div class="field subfield">
+          <label for="lumpmonth">Paid in</label>
+          <div class="inputrow">
+            <select id="lumpmonth">
+              <option value="1">January</option><option value="2">February</option>
+              <option value="3">March</option><option value="4">April</option>
+              <option value="5">May</option><option value="6">June</option>
+              <option value="7">July</option><option value="8">August</option>
+              <option value="9">September</option><option value="10">October</option>
+              <option value="11">November</option><option value="12" selected>December</option>
+            </select>
+          </div>
+          <div class="hint">The month matters: money paid in January earns almost a full year of dividend, money paid in December earns none.</div>
+        </div>
+
       </div>
 
       <div id="fixedblock" hidden>
@@ -693,7 +769,6 @@ td.c{color:var(--text-dim)}
         <div class="stat"><div class="k">You put in</div><div class="v j" id="s-contrib">RM0</div></div>
         <div class="stat"><div class="k">Employer put in</div><div class="v b" id="s-employer">RM0</div></div>
         <div class="stat"><div class="k">Dividends earned</div><div class="v b" id="s-div">RM0</div></div>
-        <div class="stat"><div class="k">Without dividends</div><div class="v" id="s-nodiv">0 yr</div></div>
       </div>
     </section>
 
@@ -703,13 +778,16 @@ td.c{color:var(--text-dim)}
       <a href="https://www.kwsp.gov.my/en/others/resource-centre/dividend" target="_blank" rel="noopener">Source: KWSP resource centre</a>
     </div>
     <p style="color:var(--text-dim);font-size:13px;margin:0" id="histlede"></p>
+    <div class="histlegend" id="histlegend"></div>
     <svg class="histsvg" id="histsvg" viewBox="0 0 900 200" preserveAspectRatio="none" role="img" aria-label="EPF dividend rate history"></svg>
     <div class="histstats" id="histstats"></div>
   </section>
 
   <section class="ledger">
-    <h2>Year by year</h2>
-    <p class="lede">One row per calendar year, because EPF pays its dividend once a year on 31 December. The first row is usually a part year running from your start date to the end of that year. The highlighted row is when the target is crossed.</p>
+    <div class="ledgerhead">
+      <h2>Year by year</h2>
+      <p class="lede" style="margin:0">One row per calendar year, because EPF pays its dividend once a year on 31 December. The first row is usually a part year running from your start date to the end of that year. The highlighted row is when the goal is crossed.</p>
+    </div>
     <div class="tablewrap">
       <table>
         <thead>
@@ -731,21 +809,59 @@ td.c{color:var(--text-dim)}
   <section class="notes">
     <h3>How this is worked out</h3>
 
-    <p style="color:var(--text-dim);font-size:13.5px;margin:0 0 4px">EPF style, for a cycle of <em>n</em> contribution months ending 31 December:</p>
-    <code class="eq">D = r &times; [ B &times; (n &divide; 12) + C &times; n(n &minus; 1) &divide; 24 ]&nbsp;&nbsp;&nbsp;B<sub>next</sub> = B + nC + D</code>
+    <div class="eqgrid">
+      <div class="eqcard">
+        <div class="cap">EPF style, cycle of <em>n</em> months ending 31 December</div>
+        <code class="eq" style="border:0;margin:6px 0 0;background:transparent">D = r &times; [ B(n &divide; 12) + C &times; n(n &minus; 1) &divide; 24 + L(12 &minus; m) &divide; 12 ]</code>
+        <code class="eq" style="border:0;margin:0;background:transparent">B<sub>next</sub> = B + nC + L + D</code>
+      </div>
+      <div class="eqcard">
+        <div class="cap">Monthly compounding, closed form</div>
+        <code class="eq" style="border:0;margin:6px 0 0;background:transparent">FV = P(1 + i)<sup>n</sup> + C &times; [(1 + i)<sup>n</sup> &minus; 1] &divide; i</code>
+        <code class="eq" style="border:0;margin:0;background:transparent">i = r &divide; 12</code>
+      </div>
+    </div>
 
-    <p style="color:var(--text-dim);font-size:13.5px;margin:14px 0 4px">Monthly compounding, closed form:</p>
-    <code class="eq">FV = P(1 + i)<sup>n</sup> + C &times; [(1 + i)<sup>n</sup> &minus; 1] &divide; i&nbsp;&nbsp;&nbsp;i = r &divide; 12</code>
+    <div class="notegrid">
+      <div class="note">
+        <h4>The 5.5 factor</h4>
+        <p>For a full year <em>n</em> = 12 and the contribution term becomes <b>5.5C</b>. Contributions arrive month by month rather than all at once: a payment in month <em>m</em> earns dividend for (12 &minus; <em>m</em>) months, and those fractions add up to 5.5 months across the twelve payments.</p>
+      </div>
+      <div class="note">
+        <h4>A yearly extra, the L term</h4>
+        <p><b>L</b> is a bonus or top-up paid once in month <em>m</em>, so it earns (12 &minus; <em>m</em>) &divide; 12 of a year's dividend: almost a full year in January, nothing in December. It only lands in a cycle if that month falls inside it, so starting in July with a January bonus means the first bonus arrives the following calendar year.</p>
+      </div>
+      <div class="note">
+        <h4>Why the start date matters</h4>
+        <p>The first cycle runs from your start date to 31 December, so it is usually a part year. Starting in January gives a near full stub year of dividend, starting in November gives almost none. The same inputs can shift the finish by close to a year.</p>
+      </div>
+      <div class="note">
+        <h4>Crossing on 31 December</h4>
+        <p>When the goal is crossed by the annual dividend rather than by a contribution, the exact day is <b>31 December</b>. EPF declares and credits the dividend a few months later and backdates it, so treat that as the accounting date, not the day the money appears.</p>
+      </div>
+      <div class="note">
+        <h4>Rates are declared, not forecast</h4>
+        <p>Dividend rates are set after the fact. Recent declared rates for conventional savings have sat roughly between <b>5.0%</b> and <b>6.3%</b>, and the ten year mean is close to <b>5.9%</b>. Treat any single figure as a scenario.</p>
+      </div>
+      <div class="note">
+        <h4>Statutory contribution rates</h4>
+        <p>Malaysian members under 60 contribute <b>11%</b>, employers <b>13%</b> on wages up to RM5,000 and <b>12%</b> above. Non-Malaysian members have contributed <b>2%</b> and <b>2%</b> since October 2025. The employer band is retested each projected year, so a rising salary can cross the threshold mid-projection.</p>
+      </div>
+      <div class="note">
+        <h4>Bonus counts as wages</h4>
+        <p>Both sides contribute on a bonus, at the same rates as salary. The statutory band is set by your <b>base wage</b>, so a bonus that pushes a single month above RM5,000 does not by itself drop the employer rate from 13% to 12%. A voluntary top-up is your own money and carries no employer share.</p>
+      </div>
+      <div class="note">
+        <h4>Third Schedule rounding</h4>
+        <p>EPF officially computes contributions from the Third Schedule, which uses wage bands and rounds to set amounts. Straight percentages are used here, so a payslip may differ by a few ringgit a month. Above RM20,000 a month, exact percentages apply anyway.</p>
+      </div>
+      <div class="note">
+        <h4>What is not modelled</h4>
+        <p>Account 1, 2 and 3 splits, withdrawals, age 60 and above rates, and the separate shariah dividend when it diverges. Neither is inflation, so whatever goal you set will buy less in the future than it does today.</p>
+      </div>
+    </div>
 
-    <ul>
-      <li>For a full year, <em>n</em> = 12 and the contribution term becomes 5.5C. That 5.5 is there because contributions arrive month by month rather than all at once: a payment in month <em>m</em> earns dividend for (12 &minus; <em>m</em>) months, and those fractions add up to 5.5 months across the twelve payments.</li>
-      <li>The start date matters. Beginning in January gives a near full stub year of dividend, beginning in November gives almost none, so the same inputs can shift the finish by close to a year.</li>
-      <li>When the target is crossed by the annual dividend rather than by a contribution, the exact day is <strong>31 December</strong>. In practice EPF declares and credits the dividend a few months later, backdated, so treat that day as the accounting date rather than the day the money appears.</li>
-      <li>Dividend rates are declared after the fact and vary. Recent declared rates for conventional savings have sat roughly between 5.0% and 6.3%, so treat any single figure as a scenario, not a forecast.</li>
-      <li>Statutory rates used here are 11% employee, and 13% employer on wages up to RM5,000 or 12% above, for Malaysian members under 60. Non-Malaysian members have contributed 2% and 2% since October 2025. The employer band is retested each projected year, so a rising salary can cross the threshold mid-projection.</li>
-      <li>Account 1, 2 and 3 splits, withdrawals, and the shariah dividend rate are not modelled here. Neither is inflation, so whatever goal you set will buy less in the future than it does today.</li>
-      <li class="flag" id="warnline" style="display:none"></li>
-    </ul>
+    <div class="notewarn" id="warnline" style="display:none"></div>
   </section>
 
 </div>
@@ -759,19 +875,21 @@ td.c{color:var(--text-dim)}
     start:$("start"),
     goalname:$("goalname"), livesum:$("livesum"), eyebrow:document.querySelector(".answer .eyebrow"),
     balance:$("balance"), monthly:$("monthly"), growth:$("growth"),
-    salary:$("salary"), emppct:$("emppct"), erpct:$("erpct"), topup:$("topup"),
+    salary:$("salary"), emppct:$("emppct"), erpct:$("erpct"),
+    lump:$("lump"), lumpmonth:$("lumpmonth"),
     erauto:$("erauto"), sEmployer:$("s-employer"),
     rate:$("rate"), target:$("target"),
     headline:$("headline"), headnote:$("headnote"),
     plot:$("plot"), xaxis:$("xaxis"), tbody:$("tbody"),
     sDate:$("s-date"),
-    sFinal:$("s-final"), sContrib:$("s-contrib"), sDiv:$("s-div"), sNodiv:$("s-nodiv"),
+    sFinal:$("s-final"), sContrib:$("s-contrib"), sDiv:$("s-div"),
     warn:$("warnline")
   };
 
   var precision = "month";
   var contribMode = "salary";   // salary | fixed
   var creditMode = "epf";       // epf | monthly
+  var lumpKind = "topup";       // topup | bonus
   var WAGE_BAND = 5000;         // employer rate steps down above this monthly wage
 
   var MAX_YEARS = 80;
@@ -828,28 +946,45 @@ td.c{color:var(--text-dim)}
   // employer statutory rate depends on the monthly wage band
   function autoEmployerPct(salary){ return salary <= WAGE_BAND ? 13 : 12; }
 
-  // returns a function mapping cycle index to { emp, er, total } monthly ringgit
+  // returns a function mapping cycle index to the monthly and yearly-lump amounts
   function buildContribFn(){
     var g = Math.max(0, num(els.growth, 0)) / 100;
+    var lump0 = Math.max(0, num(els.lump, 0));
+    var lumpMonth = Math.min(12, Math.max(1, parseInt(els.lumpmonth.value, 10) || 12));
+
     if(contribMode === "fixed"){
       var base = Math.max(0, num(els.monthly, 0));
       return function(cycle){
-        var v = base * Math.pow(1 + g, cycle);
-        return { emp:v, er:0, total:v, salary:0, erPct:0 };
+        var f = Math.pow(1 + g, cycle);
+        return { mEmp:base * f, mEr:0, monthly:base * f,
+                 lEmp:0, lEr:0, lump:0, lumpMonth:lumpMonth, salary:0, erPct:0 };
       };
     }
+
     var sal0 = Math.max(0, num(els.salary, 0));
     var ep = Math.max(0, num(els.emppct, 0));
     var manualEr = Math.max(0, num(els.erpct, 0));
     var auto = els.erauto.checked;
-    var top0 = Math.max(0, num(els.topup, 0));
     return function(cycle){
-      var sal = sal0 * Math.pow(1 + g, cycle);
-      var top = top0 * Math.pow(1 + g, cycle);
+      var f = Math.pow(1 + g, cycle);
+      var sal = sal0 * f;
+      var L = lump0 * f;
       var erPct = auto ? autoEmployerPct(sal) : manualEr;
-      var emp = sal * ep / 100 + top;
-      var er = sal * erPct / 100;
-      return { emp:emp, er:er, total:emp + er, salary:sal, erPct:erPct };
+      var lEmp = 0, lEr = 0;
+      if(lumpKind === "bonus"){
+        // bonus counts as wages, at the same employer rate as salary:
+        // the statutory band is set by base wage, not by the bonus-inflated month
+        lEmp = L * ep / 100;
+        lEr  = L * erPct / 100;
+      } else {
+        // voluntary top-up: the whole amount is the member's own money, no employer share
+        lEmp = L;
+      }
+      return {
+        mEmp: sal * ep / 100, mEr: sal * erPct / 100, monthly: sal * (ep + erPct) / 100,
+        lEmp: lEmp, lEr: lEr, lump: lEmp + lEr, lumpMonth: lumpMonth,
+        salary: sal, erPct: erPct, gross: L
+      };
     };
   }
 
@@ -927,8 +1062,8 @@ td.c{color:var(--text-dim)}
   }
 
   // ---- core projection, aligned to calendar years ----
-  // EPF credits one dividend at the end of each calendar year, so the first
-  // cycle after the start date is usually a stub of fewer than 12 months.
+  // EPF credits one dividend at the end of each calendar year. A contribution made in
+  // calendar month m therefore earns dividend for (12 - m) of that year's months.
   function project(P, contribFn, rateFn, target, mode, start){
     var rows = [], balance = P, reached = null, reachedBal = P, reachedDate = null;
     var totalContrib = 0, totalDiv = 0, totalEmp = 0, totalEr = 0;
@@ -938,48 +1073,49 @@ td.c{color:var(--text-dim)}
                totalContrib:0, totalDiv:0, totalEmp:0, totalEr:0, capped:false };
     }
 
-    var startMonth = start.getMonth();          // 0 = January
     var year = start.getFullYear();
-    var elapsed = 0;                            // months since the start date
-    var cycle = 0;
+    var firstMonth = start.getMonth() + 2;   // first contribution is the month after the start
+    var elapsed = 0;                          // months since the start date
+    var cycle = 0;                            // counts cycles that actually run, drives growth
 
     while(cycle < MAX_YEARS){
-      // months in this cycle: stub to 31 December first, then full years
-      var n = (cycle === 0) ? (11 - startMonth) : 12;
-      if(n === 0){ cycle++; year++; continue; }  // started in December, no room for a stub
+      var n = 12 - firstMonth + 1;
+      if(n <= 0){ year++; firstMonth = 1; continue; }   // started in December: no stub year
 
+      var c = contribFn(cycle);
       var opening = balance;
-      var cc = contribFn(cycle);
-      var C = cc.total;
-      var contrib = 0, dividend = 0;
       var r = rateFn(year);
+      var lumpIn = c.lump > 0 && c.lumpMonth >= firstMonth;   // lump only counts if it falls in this cycle
+      var contrib = 0, dividend = 0;
 
       if(mode === "monthly"){
         var i = r / 12;
-        for(var m = 1; m <= n; m++){
+        for(var m = firstMonth; m <= 12; m++){
+          var add = c.monthly + (lumpIn && m === c.lumpMonth ? c.lump : 0);
           var interest = balance * i;
-          balance = balance + interest + C;
-          dividend += interest;
-          contrib += C;
+          balance = balance + interest + add;
+          dividend += interest; contrib += add;
           if(reached === null && balance >= target){
-            reached = elapsed + m;
+            reached = elapsed + (m - firstMonth + 1);
             reachedBal = balance;
-            reachedDate = addMonths(start, elapsed + m);
+            reachedDate = new Date(year, m - 1, daysIn(year, m));
           }
         }
       } else {
-        // contributions land monthly, dividend lands once on 31 December
-        for(var m2 = 1; m2 <= n; m2++){
-          var running = opening + C * m2;
+        var running = opening;
+        for(var m2 = firstMonth; m2 <= 12; m2++){
+          running += c.monthly + (lumpIn && m2 === c.lumpMonth ? c.lump : 0);
           if(reached === null && running >= target){
-            reached = elapsed + m2;
+            reached = elapsed + (m2 - firstMonth + 1);
             reachedBal = running;
-            reachedDate = addMonths(start, elapsed + m2);
+            reachedDate = new Date(year, m2 - 1, daysIn(year, m2));
           }
         }
-        contrib = C * n;
-        // opening sits for n/12 of the year, each contribution for a shrinking slice
-        dividend = r * (opening * (n / 12) + C * (n * (n - 1) / 24));
+        contrib = c.monthly * n + (lumpIn ? c.lump : 0);
+        // opening sits the whole cycle; each monthly sits a shrinking slice; the lump sits (12 - month)
+        dividend = r * (opening * (n / 12)
+                        + c.monthly * (n * (n - 1) / 24)
+                        + (lumpIn ? c.lump * (12 - c.lumpMonth) / 12 : 0));
         balance = opening + contrib + dividend;
         if(reached === null && balance >= target){
           reached = elapsed + n;
@@ -989,17 +1125,18 @@ td.c{color:var(--text-dim)}
       }
 
       totalContrib += contrib;
-      totalEmp += cc.emp * n;
-      totalEr += cc.er * n;
+      totalEmp += c.mEmp * n + (lumpIn ? c.lEmp : 0);
+      totalEr  += c.mEr  * n + (lumpIn ? c.lEr  : 0);
       totalDiv += dividend;
       rows.push({
-        label: String(year) + (cycle === 0 && n < 12 ? " (part)" : ""),
-        rate: r, months: n, emp: cc.emp * n, er: cc.er * n, salary: cc.salary, opening:opening, contrib:contrib, dividend:dividend, closing:balance
+        label: String(year) + (n < 12 ? " (part)" : ""),
+        rate: r, months: n, salary: c.salary,
+        emp: c.mEmp * n + (lumpIn ? c.lEmp : 0), er: c.mEr * n + (lumpIn ? c.lEr : 0),
+        opening: opening, contrib: contrib, dividend: dividend, closing: balance
       });
 
       elapsed += n;
-      year++;
-      cycle++;
+      year++; firstMonth = 1; cycle++;
       if(reached !== null) break;
     }
 
@@ -1009,18 +1146,24 @@ td.c{color:var(--text-dim)}
       capped:(reached === null)
     };
   }
+  function daysIn(y, m){ return new Date(y, m, 0).getDate(); }
 
   // months needed with contributions only, no dividend
-  function noDividendMonths(P, contribFn, target){
+  function noDividendMonths(P, contribFn, target, start){
     if(P >= target) return 0;
-    if(contribFn(0).total <= 0) return Infinity;
-    var bal = P;
-    for(var y = 1; y <= 400; y++){
-      var C = contribFn(y - 1).total;
-      for(var m = 1; m <= 12; m++){
-        bal += C;
-        if(bal >= target) return (y - 1) * 12 + m;
+    var c0 = contribFn(0);
+    if(c0.monthly <= 0 && c0.lump <= 0) return Infinity;
+    var bal = P, firstMonth = start.getMonth() + 2, elapsed = 0, cycle = 0;
+    while(cycle < 400){
+      var n = 12 - firstMonth + 1;
+      if(n <= 0){ firstMonth = 1; continue; }
+      var c = contribFn(cycle);
+      var lumpIn = c.lump > 0 && c.lumpMonth >= firstMonth;
+      for(var m = firstMonth; m <= 12; m++){
+        bal += c.monthly + (lumpIn && m === c.lumpMonth ? c.lump : 0);
+        if(bal >= target) return elapsed + (m - firstMonth + 1);
       }
+      elapsed += n; firstMonth = 1; cycle++;
     }
     return Infinity;
   }
@@ -1043,21 +1186,40 @@ td.c{color:var(--text-dim)}
     $("erctrl").classList.toggle("dim", salaryOn && els.erauto.checked);
 
     var html = "";
+    var isBonus = lumpKind === "bonus";
+    $("lumphint").innerHTML = isBonus
+      ? "Bonus counts as wages, so both sides contribute on it at the same rates as salary."
+      : "A voluntary top-up is entirely your own money. There is no employer share.";
+
     if(salaryOn){
-      var sal = c.salary, ep = Math.max(0, num(els.emppct, 0)), top = Math.max(0, num(els.topup, 0));
-      html += row("Salary", rm(sal));
-      html += row("<span class='me'>You, " + ep.toFixed(1).replace(/\.0$/,"") + "%</span>", rm(sal * ep / 100), "me");
-      if(top > 0) html += row("<span class='me'>Voluntary top-up</span>", rm(top), "me");
-      html += row("<span class='co'>Employer, " + c.erPct.toFixed(1).replace(/\.0$/,"") + "%</span>", rm(c.er), "co");
-      html += '<div class="row tot"><span>Into EPF each month</span><span>' + rm(c.total) + '</span></div>';
-      html += '<div class="row"><span class="lbl">Per year</span><span class="lbl">' + rm(c.total * 12) + '</span></div>';
+      var ep = Math.max(0, num(els.emppct, 0));
+      html += row("Salary", rm(c.salary));
+      html += row("<span class='me'>You, " + pct(ep) + "</span>", rm(c.mEmp), "me");
+      html += row("<span class='co'>Employer, " + pct(c.erPct) + "</span>", rm(c.mEr), "co");
+      html += '<div class="row tot"><span>Monthly</span><span>' + rm(c.monthly) + '</span></div>';
+      html += row("Twelve months", rm(c.monthly * 12));
+      if(c.lump > 0){
+        html += '<div class="row" style="margin-top:6px"><span class="lbl">' +
+          (isBonus ? "Bonus" : "Top-up") + " each " + MONTHS[c.lumpMonth - 1] + '</span><span>' + rm(c.gross) + '</span></div>';
+        if(isBonus){
+          html += row("<span class='me'>&nbsp;&nbsp;you</span>", rm(c.lEmp), "me");
+          html += row("<span class='co'>&nbsp;&nbsp;employer</span>", rm(c.lEr), "co");
+        }
+        html += row("&nbsp;&nbsp;into EPF", rm(c.lump));
+      }
+      html += '<div class="row tot"><span>Per year</span><span>' + rm(c.monthly * 12 + c.lump) + '</span></div>';
     } else {
-      html += '<div class="row tot"><span>Into EPF each month</span><span>' + rm(c.total) + '</span></div>';
-      html += '<div class="row"><span class="lbl">Per year</span><span class="lbl">' + rm(c.total * 12) + '</span></div>';
-      html += '<div class="row"><span class="lbl">Counted entirely as yours</span><span class="lbl">no employer share</span></div>';
+      html += '<div class="row tot"><span>Monthly</span><span>' + rm(c.monthly) + '</span></div>';
+      html += row("Twelve months", rm(c.monthly * 12));
+      if(c.lump > 0) html += row("Top-up each " + MONTHS[c.lumpMonth - 1], rm(c.lump));
+      html += '<div class="row tot"><span>Per year</span><span>' + rm(c.monthly * 12 + c.lump) + '</span></div>';
+      html += row("Employer share", "none");
     }
     $("breakdown").innerHTML = html;
   }
+  var MONTHS = ["January","February","March","April","May","June",
+                "July","August","September","October","November","December"];
+  function pct(x){ return (Math.round(x * 10) / 10) + "%"; }
   function row(label, val, cls){
     return '<div class="row"><span class="lbl">' + label + '</span><span class="' + (cls || "") + '">' + val + '</span></div>';
   }
@@ -1118,6 +1280,11 @@ td.c{color:var(--text-dim)}
     $("histlede").innerHTML = "Simpanan " + (portfolio === "ss" ? "Shariah" : "Konvensional") +
       ", declared rates through " + LAST_ACTUAL + ". Dashed section is what this calculator assumes going forward.";
 
+    $("histlegend").innerHTML =
+      '<span><i class="lsw solid"></i>Declared rates, ' + shown[0] + " to " + LAST_ACTUAL + '</span>' +
+      '<span><i class="lsw dash"></i>Assumed from ' + (LAST_ACTUAL + 1) + ', ' + modeLabel() + '</span>' +
+      '<span><i class="lsw dot"></i>Mean of ' + span + ', ' + s.mean.toFixed(2) + '%</span>';
+
     // svg
     var W = 900, H = 200, padL = 34, padR = 8, padT = 12, padB = 20;
     var years = shown.concat(projYears);
@@ -1155,6 +1322,12 @@ td.c{color:var(--text-dim)}
     });
     $("histsvg").innerHTML = svg;
   }
+  function modeLabel(){
+    return rateMode === "fixed"  ? "flat rate you set"
+         : rateMode === "avg"    ? "historical average"
+         : rateMode === "trend"  ? "fitted trend line"
+         :                         "replayed history";
+  }
   function tile(k, v){ return '<div><div class="k">' + k + '</div><div class="v">' + v + '</div></div>'; }
   function render(){
     var P = Math.max(0, num(els.balance, 0));
@@ -1178,7 +1351,7 @@ td.c{color:var(--text-dim)}
       els.headline.innerHTML = "Out of <em>reach</em>";
       els.headnote.innerHTML = "At these settings the balance does not reach <strong>" + rm(T) + "</strong> within " + MAX_YEARS + " years. Raise the contribution or the dividend rate.";
       els.sDate.textContent = "Never";
-      els.warn.style.display = "list-item";
+      els.warn.style.display = "block";
       els.warn.textContent = "Projection stopped at " + MAX_YEARS + " years without reaching the target.";
     } else {
       var mo = res.reached;
@@ -1192,13 +1365,19 @@ td.c{color:var(--text-dim)}
       var landedOnDividend = (res.reachedDate.getMonth() === 11 && res.reachedDate.getDate() === 31 && mode === "epf");
       els.sDate.textContent = fmtDate(res.reachedDate, precision);
       els.headnote.innerHTML =
-        "Counting from <strong>" + fmtDate(start, "exact") + "</strong>, the balance crosses <strong>" + rm(T) +
-        "</strong> on <strong>" + fmtDate(res.reachedDate, precision) + "</strong>" +
+        "Counting from <b>" + fmtDate(start, "exact") + "</b>, the balance crosses <b>" + rm(T) +
+        "</b> on <b>" + fmtDate(res.reachedDate, precision) + "</b>" +
         (landedOnDividend ? " when that year's dividend is credited" : " on a contribution") +
-        ", landing at " + rm(res.reachedBal) + ". Of the " + rm(res.reachedBal - P) + " added along the way, <strong>" +
-        rm(res.totalDiv) + "</strong> is dividend and " + rm(res.totalContrib) + " is contributions" +
+        ", landing at <b>" + rm(res.reachedBal) + "</b>. Of the <b>" + rm(res.reachedBal - P) + "</b> added along the way, <b>" +
+        rm(res.totalDiv) + "</b> is dividend and <b>" + rm(res.totalContrib) + "</b> is contributions" +
         (contribMode === "salary" && res.totalEr > 0
-          ? " (" + rm(res.totalEmp) + " from you, " + rm(res.totalEr) + " from your employer)." : ".");
+          ? " (" + rm(res.totalEmp) + " from you, " + rm(res.totalEr) + " from your employer)." : ".") +
+        (function(){
+          var nd = noDividendMonths(P, contribFn, T, start);
+          if(nd === Infinity) return " The same payments alone would never get there.";
+          if(nd <= res.reached) return "";
+          return " The same payments without any dividend would take <b>" + dur(nd) + "</b>.";
+        })();
     }
 
     // stats
@@ -1220,8 +1399,6 @@ td.c{color:var(--text-dim)}
     els.sContrib.textContent = rm(res.totalEmp);
     els.sEmployer.textContent = rm(res.totalEr);
     els.sDiv.textContent = rm(res.totalDiv);
-    var nd = noDividendMonths(P, contribFn, T);
-    els.sNodiv.textContent = (nd === Infinity) ? "Never" : durPlain(nd);
 
     // chart
     els.plot.innerHTML = "";
@@ -1338,7 +1515,7 @@ td.c{color:var(--text-dim)}
   segGroup("contribsrc", "data-c", function(v){ contribMode = v; });
   els.erauto.addEventListener("change", render);
 
-  var KEYS = ["balance","monthly","growth","rate","target","salary","emppct","erpct","topup"];
+  var KEYS = ["balance","monthly","growth","rate","target","salary","emppct","erpct","lump"];
   var sliders = {};
   KEYS.forEach(function(k){ sliders[k] = $(k + "-r"); });
 
@@ -1405,6 +1582,8 @@ td.c{color:var(--text-dim)}
   });
 
   segGroup("creditmode", "data-cm", function(v){ creditMode = v; });
+  segGroup("lumpkind", "data-l", function(v){ lumpKind = v; });
+  els.lumpmonth.addEventListener("change", render);
 
   // theme
   var btn = $("themebtn");
