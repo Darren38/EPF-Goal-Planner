@@ -1,0 +1,1431 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EPF Goal Planner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0D1A1B;
+  --surface:#14282A;
+  --surface-2:#1B3336;
+  --line:#2C4A4D;
+  --text:#E6EFEC;
+  --text-dim:#8FAAA8;
+  --text-mid:#C6D8D3;
+  --jade:#35B27B;
+  --jade-soft:#1F5E45;
+  --brass:#E0A92C;
+  --brass-soft:#6B4F13;
+  --warn:#E0704A;
+  --radius:3px;
+}
+html[data-theme="light"]{
+  --ink:#EBEFEC;
+  --surface:#FFFFFF;
+  --surface-2:#F3F6F3;
+  --line:#D2DBD6;
+  --text:#12211F;
+  --text-dim:#5B706C;
+  --text-mid:#2E413C;
+  --jade:#17875A;
+  --jade-soft:#BFE3D1;
+  --brass:#A97A0A;
+  --brass-soft:#F0DCA9;
+  --warn:#B84A22;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--ink);
+  color:var(--text);
+  font-family:"IBM Plex Sans",system-ui,sans-serif;
+  font-size:15px;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+  transition:background .25s ease,color .25s ease;
+}
+.wrap{max-width:1120px;margin:0 auto;padding:22px 20px 72px}
+
+/* ---------- masthead ---------- */
+.topbar{
+  position:sticky;top:0;z-index:60;background:var(--ink);
+  border-bottom:1px solid var(--line);
+}
+.topbar-in{
+  max-width:1120px;margin:0 auto;padding:11px 20px;
+  display:flex;align-items:center;justify-content:space-between;gap:18px;
+}
+.livesum{
+  display:flex;align-items:baseline;gap:16px;flex:1;justify-content:flex-end;
+  font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--text-dim);
+  opacity:0;transform:translateY(-3px);transition:opacity .22s ease,transform .22s ease;
+  pointer-events:none;white-space:nowrap;overflow:hidden;
+}
+.topbar.stuck .livesum{opacity:1;transform:none}
+.livesum b{color:var(--text);font-weight:600}
+.livesum .hl{color:var(--jade);font-weight:600}
+@media(max-width:800px){.livesum{display:none}}
+.mark{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.mark .kwsp{
+  font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--jade);
+}
+.mark .sub{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim)}
+.themebtn{
+  font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+  background:transparent;color:var(--text-dim);border:1px solid var(--line);
+  border-radius:var(--radius);padding:7px 12px;cursor:pointer;transition:all .2s ease;
+}
+.themebtn:hover{color:var(--text);border-color:var(--jade)}
+.themebtn:focus-visible{outline:2px solid var(--jade);outline-offset:2px}
+
+/* ---------- headline answer ---------- */
+.answer{padding:8px 0 22px;border-bottom:1px solid var(--line)}
+.answer-grid{display:grid;grid-template-columns:auto 1fr;gap:8px 34px;align-items:end}
+@media(max-width:760px){.answer-grid{grid-template-columns:1fr}}
+.eyebrow{
+  font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--text-dim);margin-bottom:10px;
+}
+.bignum{
+  font-family:"Bricolage Grotesque",sans-serif;font-weight:800;
+  font-size:clamp(2.2rem,6vw,4rem);line-height:.94;letter-spacing:-.03em;
+  margin:0;color:var(--text);
+}
+.bignum em{font-style:normal;color:var(--jade)}
+.answer-note{margin-top:14px;color:var(--text-dim);font-size:14px;max-width:62ch}
+.answer-note strong{color:var(--text);font-weight:600}
+
+/* ---------- layout ---------- */
+.deck{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:26px;
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  overflow:hidden;
+}
+.deckcol{padding:18px;border-right:1px solid var(--line)}
+.deckcol:last-child{border-right:0}
+.deckcol>h3{
+  font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--jade);margin:0 0 14px;font-weight:600;
+}
+.deck .field{margin-bottom:13px}
+.deck .field:last-child{margin-bottom:0}
+.deck .subfield{margin-bottom:11px}
+.deck input[type=range]{margin:8px 0 1px}
+.deck .hint{font-size:10.5px;line-height:1.4}
+.deck .scale{font-size:9px}
+.deck label{font-size:12.5px}
+@media(max-width:1000px){
+  .deck{grid-template-columns:repeat(2,1fr)}
+  .deckcol:nth-child(2n){border-right:0}
+  .deckcol{border-bottom:1px solid var(--line)}
+  .deckcol:nth-last-child(-n+2){border-bottom:0}
+}
+@media(max-width:620px){
+  .deck{grid-template-columns:1fr}
+  .deckcol{border-right:0;border-bottom:1px solid var(--line)}
+  .deckcol:last-child{border-bottom:0}
+}
+.chartcard{margin-top:22px}
+
+/* ---------- controls ---------- */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px}
+.panel h2{
+  font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--text-dim);margin:0 0 18px;font-weight:500;
+}
+.field{margin-bottom:18px}
+.field label{display:block;font-size:13px;color:var(--text-dim);margin-bottom:6px}
+.inputrow{display:flex;align-items:stretch;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface-2);overflow:hidden}
+.inputrow .pre{
+  font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--text-dim);
+  display:flex;align-items:center;padding:0 9px;border-right:1px solid var(--line);
+}
+.inputrow .post{
+  font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--text-dim);
+  display:flex;align-items:center;padding:0 9px;border-left:1px solid var(--line);
+}
+.inputrow input{
+  flex:1;min-width:0;background:transparent;border:0;color:var(--text);
+  font-family:"IBM Plex Mono",monospace;font-size:15px;font-weight:500;
+  padding:10px 10px;font-variant-numeric:tabular-nums;
+}
+.inputrow input:focus{outline:none}
+.inputrow:focus-within{border-color:var(--jade);box-shadow:0 0 0 2px color-mix(in srgb,var(--jade) 25%,transparent)}
+.inputrow input[type=text]{font-family:"IBM Plex Sans",sans-serif;font-size:14px;font-weight:500}
+.inputrow input[type=text]::placeholder{color:var(--text-dim);font-weight:400}
+.inputrow input[type=date]{
+  font-family:"IBM Plex Mono",monospace;font-size:14px;color:var(--text);
+  padding:10px;width:100%;
+}
+.inputrow input[type=date]::-webkit-calendar-picker-indicator{
+  filter:invert(.6);cursor:pointer;
+}
+html[data-theme="light"] .inputrow input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.35)}
+.seg-ctrl{display:flex;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+.seg-ctrl button{
+  flex:1;font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.05em;
+  padding:8px 6px;background:var(--surface-2);color:var(--text-dim);
+  border:0;border-right:1px solid var(--line);cursor:pointer;transition:all .15s ease;
+}
+.seg-ctrl button:last-child{border-right:0}
+.seg-ctrl button:hover{color:var(--text)}
+.seg-ctrl button.on{background:var(--jade);color:var(--ink)}
+html[data-theme="light"] .seg-ctrl button.on{color:#fff}
+.seg-ctrl button:focus-visible{outline:2px solid var(--jade);outline-offset:-2px}
+
+/* ---------- how to use ---------- */
+.guide{
+  margin-top:26px;border:1px solid var(--line);border-left:3px solid var(--jade);
+  border-radius:var(--radius);background:var(--surface);
+}
+.guide>summary{
+  list-style:none;cursor:pointer;padding:15px 18px;display:flex;
+  align-items:center;justify-content:space-between;gap:12px;
+  font-family:"IBM Plex Mono",monospace;font-size:11.5px;letter-spacing:.15em;
+  text-transform:uppercase;color:var(--jade);font-weight:600;
+}
+.guide>summary::-webkit-details-marker{display:none}
+.guide>summary::after{content:"+";font-size:17px;line-height:1;color:var(--text-dim)}
+.guide[open]>summary::after{content:"\2013"}
+.guide>summary:hover{color:var(--text)}
+.guide>summary:focus-visible{outline:2px solid var(--jade);outline-offset:-2px}
+.guidebody{padding:0 18px 20px;border-top:1px solid var(--line);padding-top:16px}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px 26px;margin:0}
+.step{display:flex;gap:11px;align-items:flex-start}
+.step .n{
+  flex:0 0 auto;width:21px;height:21px;border-radius:50%;background:var(--jade);color:var(--ink);
+  font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:600;
+  display:flex;align-items:center;justify-content:center;margin-top:1px;
+}
+html[data-theme="light"] .step .n{color:#fff}
+.step h4{margin:0 0 3px;font-size:14px;font-weight:600;color:var(--text)}
+.step p{margin:0;font-size:13px;color:var(--text-mid);line-height:1.5}
+.step p b{color:var(--text);font-weight:600}
+.keycol{display:flex;gap:16px;flex-wrap:wrap;margin-top:18px;padding-top:15px;border-top:1px solid var(--line)}
+.keycol span{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--text-mid)}
+.watch{
+  margin-top:16px;padding:12px 14px;border-radius:var(--radius);
+  background:var(--surface-2);border:1px solid var(--line);
+  font-size:13px;color:var(--text-mid);line-height:1.55;
+}
+.watch b{color:var(--brass);font-weight:600}
+
+/* ---------- contribution source ---------- */
+.hint{font-size:11.5px;color:var(--text-dim);line-height:1.45;margin-top:6px}
+.hint b{color:var(--text-mid);font-weight:600;font-family:"IBM Plex Mono",monospace}
+
+.tick{
+  display:flex;align-items:flex-start;gap:8px;margin-top:8px;cursor:pointer;
+  font-size:12px;color:var(--text-mid);line-height:1.4;
+}
+.tick input{margin:2px 0 0;accent-color:var(--jade);width:14px;height:14px;flex:0 0 auto}
+.tick:hover{color:var(--text)}
+.subfield{margin-bottom:14px}
+.breakdown{
+  font-family:"IBM Plex Mono",monospace;font-size:12px;line-height:1.7;
+  background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius);
+  padding:11px 13px;margin-top:4px;
+}
+.breakdown .row{display:flex;justify-content:space-between;gap:10px}
+.breakdown .row.tot{border-top:1px solid var(--line);margin-top:6px;padding-top:6px;color:var(--text);font-weight:600}
+.breakdown .lbl{color:var(--text-dim)}
+.breakdown .me{color:var(--jade)}
+.breakdown .co{color:var(--brass)}
+
+/* ---------- rate basis ---------- */
+.ratemodes{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
+.ratemodes button{
+  font-family:"IBM Plex Mono",monospace;font-size:11px;padding:8px 4px;cursor:pointer;
+  background:var(--surface-2);color:var(--text-dim);border:1px solid var(--line);
+  border-radius:var(--radius);transition:all .15s ease;
+}
+.ratemodes button:hover{color:var(--text);border-color:var(--jade)}
+.ratemodes button.on{background:var(--jade);color:var(--ink);border-color:var(--jade)}
+html[data-theme="light"] .ratemodes button.on{color:#fff}
+.ratemodes button:focus-visible{outline:2px solid var(--jade);outline-offset:2px}
+.readout{
+  font-size:12px;color:var(--text-dim);line-height:1.45;
+  border-left:2px solid var(--brass);padding:2px 0 2px 10px;margin-top:10px;
+}
+.readout b{color:var(--text);font-weight:600;font-family:"IBM Plex Mono",monospace}
+.readout .weak{color:var(--warn)}
+.dim{opacity:.4;pointer-events:none}
+
+/* ---------- history chart ---------- */
+.histcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px;margin-top:28px}
+.histhead{display:flex;justify-content:space-between;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:6px}
+.histhead h3{font-family:"Bricolage Grotesque",sans-serif;font-size:17px;font-weight:600;margin:0;letter-spacing:-.01em}
+.histhead a{font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--text-dim);text-decoration:none;border-bottom:1px solid var(--line)}
+.histhead a:hover{color:var(--jade);border-color:var(--jade)}
+.histsvg{width:100%;height:200px;display:block;margin-top:10px;overflow:visible}
+.histsvg text{font-family:"IBM Plex Mono",monospace;font-size:9px;fill:var(--text-dim)}
+.histstats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--radius);margin-top:16px;overflow:hidden}
+.histstats div{background:var(--surface);padding:11px 13px}
+.histstats .k{font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim)}
+.histstats .v{font-family:"IBM Plex Mono",monospace;font-size:16px;font-weight:600;margin-top:4px}
+
+/* ---------- sliders ---------- */
+input[type=range]{
+  -webkit-appearance:none;appearance:none;width:100%;background:transparent;
+  margin:11px 0 2px;cursor:pointer;display:block;
+}
+input[type=range]::-webkit-slider-runnable-track{
+  height:3px;border-radius:2px;
+  background:linear-gradient(to right,var(--jade) 0%,var(--jade) var(--fill,50%),var(--line) var(--fill,50%),var(--line) 100%);
+}
+input[type=range]::-moz-range-track{height:3px;border-radius:2px;background:var(--line)}
+input[type=range]::-moz-range-progress{height:3px;border-radius:2px;background:var(--jade)}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;appearance:none;width:15px;height:15px;margin-top:-6px;
+  border-radius:50%;background:var(--jade);border:2px solid var(--surface);
+  transition:transform .12s ease;
+}
+input[type=range]::-moz-range-thumb{
+  width:13px;height:13px;border-radius:50%;background:var(--jade);
+  border:2px solid var(--surface);
+}
+input[type=range]:hover::-webkit-slider-thumb{transform:scale(1.18)}
+input[type=range]:focus{outline:none}
+input[type=range]:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 3px color-mix(in srgb,var(--jade) 40%,transparent)}
+input[type=range]:focus-visible::-moz-range-thumb{box-shadow:0 0 0 3px color-mix(in srgb,var(--jade) 40%,transparent)}
+.scale{
+  display:flex;justify-content:space-between;font-family:"IBM Plex Mono",monospace;
+  font-size:9.5px;color:var(--text-dim);letter-spacing:.04em;
+}
+.chips{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.chip{
+  font-family:"IBM Plex Mono",monospace;font-size:11px;padding:4px 8px;cursor:pointer;
+  background:transparent;color:var(--text-dim);border:1px solid var(--line);border-radius:var(--radius);
+  transition:all .15s ease;
+}
+.chip:hover{color:var(--text);border-color:var(--brass)}
+.chip.on{background:var(--brass);color:var(--ink);border-color:var(--brass)}
+html[data-theme="light"] .chip.on{color:#fff}
+.chip:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+
+.modes{display:flex;flex-direction:column;gap:8px}
+.mode{
+  display:flex;gap:10px;align-items:flex-start;padding:10px 11px;cursor:pointer;
+  border:1px solid var(--line);border-radius:var(--radius);background:var(--surface-2);
+  transition:border-color .15s ease;
+}
+.mode:hover{border-color:var(--jade)}
+.mode input{margin:3px 0 0;accent-color:var(--jade)}
+.mode span{font-size:13px;line-height:1.4}
+.mode small{display:block;color:var(--text-dim);font-size:11.5px;margin-top:2px}
+.mode.on{border-color:var(--jade)}
+
+/* ---------- chart ---------- */
+.chartcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px}
+.legend{display:flex;gap:18px;flex-wrap:wrap;margin-bottom:18px}
+.legend span{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text-dim)}
+.sw{width:11px;height:11px;border-radius:2px;display:inline-block}
+.sw.j{background:var(--jade)}
+.sw.b{background:var(--brass)}
+.sw.t{background:transparent;border-top:2px dashed var(--warn);height:0;width:16px;border-radius:0}
+
+.plot{position:relative;height:240px;display:flex;align-items:flex-end;gap:5px;margin-top:24px}
+.col{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:flex-end;height:100%;position:relative}
+.stack{display:flex;flex-direction:column;justify-content:flex-end;height:100%}
+.seg{width:100%;transition:height .35s cubic-bezier(.4,0,.2,1)}
+.seg.base{background:var(--jade);border-radius:2px 2px 0 0}
+.seg.div{background:var(--brass);border-radius:2px 2px 0 0}
+.col .cap{
+  position:absolute;left:0;right:0;text-align:center;font-family:"IBM Plex Mono",monospace;
+  font-size:9.5px;color:var(--text-dim);opacity:0;transition:opacity .15s ease;pointer-events:none;
+}
+.col:hover .cap,.col .cap.show{opacity:1}
+.targetline{
+  position:absolute;left:0;right:0;border-top:2px dashed var(--warn);pointer-events:none;
+}
+.targetline b{
+  position:absolute;left:0;top:-17px;font-family:"IBM Plex Mono",monospace;
+  font-size:10px;letter-spacing:.08em;color:var(--warn);font-weight:500;
+  background:var(--surface);padding-right:6px;
+}
+.xaxis{display:flex;gap:5px;margin-top:8px;border-top:1px solid var(--line);padding-top:7px}
+.xaxis div{
+  flex:1;min-width:0;text-align:center;font-family:"IBM Plex Mono",monospace;
+  font-size:10px;color:var(--text-dim);overflow:hidden;
+}
+
+/* ---------- split stats ---------- */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--radius);margin-top:20px;overflow:hidden}
+.stat{background:var(--surface);padding:14px 16px}
+.stat .k{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--text-dim)}
+.stat .v{font-family:"IBM Plex Mono",monospace;font-size:19px;font-weight:600;margin-top:5px;font-variant-numeric:tabular-nums}
+.stat .v.j{color:var(--jade)}
+.stat .v.b{color:var(--brass)}
+
+/* ---------- ledger ---------- */
+.ledger{margin-top:34px}
+.ledger h2{
+  font-family:"Bricolage Grotesque",sans-serif;font-size:20px;font-weight:600;
+  letter-spacing:-.01em;margin:0 0 4px;
+}
+.ledger p.lede{color:var(--text-dim);font-size:13.5px;margin:0 0 16px;max-width:66ch}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius)}
+table{border-collapse:collapse;width:100%;min-width:640px;background:var(--surface)}
+th,td{
+  font-family:"IBM Plex Mono",monospace;font-size:12.5px;padding:9px 14px;text-align:right;
+  font-variant-numeric:tabular-nums;border-bottom:1px solid var(--line);white-space:nowrap;
+}
+th{
+  font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--text-dim);
+  font-weight:500;background:var(--surface-2);position:sticky;top:0;
+}
+th:first-child,td:first-child{text-align:left}
+tbody tr:last-child td{border-bottom:0}
+tbody tr.hit td{background:color-mix(in srgb,var(--jade) 14%,transparent)}
+td.d{color:var(--brass)}
+td.c{color:var(--text-dim)}
+
+/* ---------- notes ---------- */
+.notes{margin-top:34px;border-top:1px solid var(--line);padding-top:22px}
+.notes h3{
+  font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--text-dim);font-weight:500;margin:0 0 12px;
+}
+.notes ul{margin:0;padding-left:18px;color:var(--text-dim);font-size:13.5px;max-width:78ch}
+.notes li{margin-bottom:8px}
+.notes strong{color:var(--text)}
+.eq{
+  font-family:"IBM Plex Mono",monospace;font-size:13.5px;color:var(--text);
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  padding:12px 15px;margin:12px 0;display:block;overflow-x:auto;white-space:nowrap;
+}
+.eq sub{font-size:.72em;vertical-align:-.25em}
+.eq sup{font-size:.72em;vertical-align:.45em}
+.flag{color:var(--warn);font-weight:600}
+
+@media (prefers-reduced-motion: reduce){
+  *{transition:none !important;animation:none !important}
+}
+</style>
+</head>
+<body>
+<header class="topbar" id="topbar">
+  <div class="topbar-in">
+    <div class="mark">
+      <span class="kwsp">KWSP / EPF</span>
+      <span class="sub">Goal planner</span>
+    </div>
+    <div class="livesum" id="livesum"></div>
+    <button class="themebtn" id="themebtn" type="button">Dark mode</button>
+  </div>
+</header>
+
+<div class="wrap">
+
+
+
+  <section class="answer">
+    <div class="eyebrow">Time to target</div>
+    <div class="answer-grid">
+      <h1 class="bignum" id="headline">4 years <em>5 months</em></h1>
+      <p class="answer-note" id="headnote" style="margin:0"></p>
+    </div>
+  </section>
+
+  <details class="guide">
+    <summary>How to use this calculator</summary>
+    <div class="guidebody">
+      <div class="steps">
+        <div class="step"><div class="n">1</div><div>
+          <h4>Set your starting point</h4>
+          <p>Enter your <b>current EPF balance</b> and the date you want to count from. Everything else builds on those two.</p>
+        </div></div>
+        <div class="step"><div class="n">2</div><div>
+          <h4>Choose where the money comes from</h4>
+          <p><b>From my salary</b> splits the contribution into your share and your employer's: enter your monthly wage, then the percentage each side pays. <b>Fixed amount</b> is for anyone paying in themselves, such as i-Saraan or voluntary contributions, where there is no employer share.</p>
+        </div></div>
+        <div class="step"><div class="n">3</div><div>
+          <h4>Enter both percentages</h4>
+          <p>Type your own share and your employer's share directly. The statutory figures are noted under each field. If you would rather not track the wage band yourself, tick <b>Set this for me</b> and the employer share follows 13% up to RM5,000 and 12% above, re-checked each year so a raise past the threshold drops it on its own.</p>
+        </div></div>
+        <div class="step"><div class="n">4</div><div>
+          <h4>Pick a dividend basis</h4>
+          <p><b>Fixed</b> uses one rate you choose. <b>Historical average</b> uses the mean of past declared rates. <b>Trend line</b> fits a line to history. <b>Replay history</b> loops real past rates forward so you can test a bad run.</p>
+        </div></div>
+        <div class="step"><div class="n">5</div><div>
+          <h4>Read the answer</h4>
+          <p>The big number is <b>how long</b> it takes. The <b>Target reached</b> tile gives the date, and you can show it as an exact day, a month, or just a year.</p>
+        </div></div>
+        <div class="step"><div class="n">6</div><div>
+          <h4>Read the chart</h4>
+          <p>Each bar is one calendar year. Hover any bar for its closing balance. The first bar is usually a part year running from your start date to 31 December.</p>
+        </div></div>
+        <div class="step"><div class="n">7</div><div>
+          <h4>Adjust and compare</h4>
+          <p>Every field has a slider. Drag one and everything updates instantly, so you can see how much a bigger contribution actually buys you.</p>
+        </div></div>
+      </div>
+
+      <div class="keycol">
+        <span><i class="sw j"></i> Balance and contributions</span>
+        <span><i class="sw b"></i> Dividend credited that year</span>
+        <span><i class="sw t"></i> Your target</span>
+      </div>
+
+      <div class="watch">
+        <b>Two things to keep in mind.</b> EPF pays its dividend once a year on 31 December, so if the target is crossed by dividend rather than by a contribution, the date will always land on 31 December. And no rate here is a forecast: declared rates are set after the fact and have swung between 4.25% and 6.90% in the last 25 years. Use the modes to bracket a range, not to pin down a date.
+        <br><br><b>On the contribution figures.</b> EPF officially calculates contributions from the Third Schedule, which uses wage bands and rounds to set amounts rather than applying a clean percentage. Straight percentages are used here, so your actual payslip may differ by a few ringgit a month. Rates also differ for members aged 60 and above; untick the automatic employer rate and enter your own if that applies to you.
+      </div>
+    </div>
+  </details>
+
+  <section class="deck">
+    <div class="deckcol">
+      <h3>Starting point</h3>
+
+      <div class="field">
+        <label for="goalname">What are you saving for?</label>
+        <div class="inputrow">
+          <input id="goalname" type="text" placeholder="Retirement fund" maxlength="32">
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="start">Start counting from</label>
+        <div class="inputrow">
+          <input id="start" type="date">
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="balance">Current EPF balance</label>
+        <div class="inputrow">
+          <span class="pre">RM</span>
+          <input id="balance" type="number" value="700000" min="0" step="1000" inputmode="decimal">
+        </div>
+        <input class="rng" id="balance-r" type="range" min="0" max="2000000" step="5000" value="700000" aria-label="Current EPF balance slider">
+        <div class="scale"><span>RM0</span><span>RM2m</span></div>
+      </div>
+
+      <div class="field">
+        <label for="target">Goal amount</label>
+        <div class="inputrow">
+          <span class="pre">RM</span>
+          <input id="target" type="number" value="1000000" min="1" step="50000" inputmode="decimal">
+        </div>
+        <input class="rng" id="target-r" type="range" min="100000" max="5000000" step="25000" value="1000000" aria-label="Goal amount slider">
+        <div class="scale"><span>RM100k</span><span>RM5m</span></div>
+        <div class="chips" id="targetchips">
+          <button class="chip" type="button" data-t="250000">250k</button>
+          <button class="chip" type="button" data-t="500000">500k</button>
+          <button class="chip on" type="button" data-t="1000000">1m</button>
+          <button class="chip" type="button" data-t="2000000">2m</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>How dividends are credited</label>
+        <div class="seg-ctrl" id="creditmode">
+          <button type="button" class="on" data-cm="epf">EPF style</button>
+          <button type="button" data-cm="monthly">Monthly</button>
+        </div>
+        <div class="hint">EPF style pays one dividend a year, weighted by how long money sat in the account. Monthly compounding is the textbook version and runs slightly faster.</div>
+      </div>
+
+      <div class="field">
+        <label>Show the end date as</label>
+        <div class="seg-ctrl" id="precision">
+          <button type="button" data-p="exact">Exact day</button>
+          <button type="button" class="on" data-p="month">Month</button>
+          <button type="button" data-p="year">Year</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="deckcol">
+      <h3>What goes in</h3>
+
+      <div class="field">
+        <label>Where the money comes from</label>
+        <div class="seg-ctrl" id="contribsrc">
+          <button type="button" class="on" data-c="salary">From my salary</button>
+          <button type="button" data-c="fixed">Fixed amount</button>
+        </div>
+      </div>
+
+      <div id="salaryblock">
+        <div class="field subfield">
+          <label for="salary">Monthly salary (EPF wages)</label>
+          <div class="inputrow">
+            <span class="pre">RM</span>
+            <input id="salary" type="number" value="7500" min="0" step="100" inputmode="decimal">
+          </div>
+          <input class="rng" id="salary-r" type="range" min="0" max="30000" step="100" value="7500" aria-label="Monthly salary slider">
+          <div class="scale"><span>RM0</span><span>RM30,000</span></div>
+        </div>
+
+        <div class="field subfield">
+          <label for="emppct">My share of salary</label>
+          <div class="inputrow">
+            <input id="emppct" type="number" value="11" min="0" max="100" step="0.5" inputmode="decimal">
+            <span class="post">%</span>
+          </div>
+          <input class="rng" id="emppct-r" type="range" min="0" max="40" step="0.5" value="11" aria-label="Employee contribution percentage slider">
+          <div class="scale"><span>0%</span><span>40%</span></div>
+          <div class="hint">Statutory <b>11%</b> under 60, <b>2%</b> non-Malaysian. You may pay more via Form 17A.</div>
+        </div>
+
+        <div class="field subfield">
+          <label for="topup">Voluntary top-up on my own</label>
+          <div class="inputrow">
+            <span class="pre">RM</span>
+            <input id="topup" type="number" value="0" min="0" step="50" inputmode="decimal">
+          </div>
+          <input class="rng" id="topup-r" type="range" min="0" max="5000" step="50" value="0" aria-label="Voluntary top-up slider">
+          <div class="scale"><span>RM0</span><span>RM5,000</span></div>
+        </div>
+      </div>
+
+      <div id="fixedblock" hidden>
+        <div class="field subfield">
+          <label for="monthly">Monthly contribution I put in</label>
+          <div class="inputrow">
+            <span class="pre">RM</span>
+            <input id="monthly" type="number" value="1800" min="0" step="50" inputmode="decimal">
+          </div>
+          <input class="rng" id="monthly-r" type="range" min="0" max="10000" step="50" value="1800" aria-label="Monthly contribution slider">
+          <div class="scale"><span>RM0</span><span>RM10,000</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="deckcol">
+      <h3>Employer and growth</h3>
+
+      <div id="erwrap">
+        <div class="field subfield">
+          <label for="erpct">Employer share of salary</label>
+          <div id="erctrl">
+            <div class="inputrow">
+              <input id="erpct" type="number" value="12" min="0" max="100" step="0.5" inputmode="decimal">
+              <span class="post">%</span>
+            </div>
+            <input class="rng" id="erpct-r" type="range" min="0" max="40" step="0.5" value="12" aria-label="Employer contribution percentage slider">
+            <div class="scale"><span>0%</span><span>40%</span></div>
+          </div>
+          <div class="hint">Statutory <b>13%</b> to RM5,000 wages, <b>12%</b> above, <b>2%</b> non-Malaysian. Differs at 60+.</div>
+          <label class="tick"><input type="checkbox" id="erauto">
+            <span>Set from the wage band, re-checked yearly</span></label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="growth" id="growthlabel">Salary grows each year by</label>
+        <div class="inputrow">
+          <input id="growth" type="number" value="0" min="0" max="20" step="0.5" inputmode="decimal">
+          <span class="post">% p.a.</span>
+        </div>
+        <input class="rng" id="growth-r" type="range" min="0" max="15" step="0.5" value="0" aria-label="Contribution growth slider">
+        <div class="scale"><span>0%</span><span>15%</span></div>
+      </div>
+
+      <div class="breakdown" id="breakdown"></div>
+    </div>
+
+    <div class="deckcol">
+      <h3>Dividend rate</h3>
+
+      <div class="field">
+        <label>Dividend rate basis</label>
+        <div class="ratemodes" id="ratemodes">
+          <button type="button" class="on" data-m="fixed">Fixed</button>
+          <button type="button" data-m="avg">Historical average</button>
+          <button type="button" data-m="trend">Trend line</button>
+          <button type="button" data-m="replay">Replay history</button>
+        </div>
+
+        <div class="seg-ctrl" id="portfolio" style="margin-bottom:8px">
+          <button type="button" class="on" data-f="sk">Konvensional</button>
+          <button type="button" data-f="ss">Shariah</button>
+        </div>
+
+        <div class="seg-ctrl" id="window">
+          <button type="button" data-w="5">5 yr</button>
+          <button type="button" class="on" data-w="10">10 yr</button>
+          <button type="button" data-w="20">20 yr</button>
+          <button type="button" data-w="0">All</button>
+        </div>
+
+        <div id="ratebox" style="margin-top:12px">
+          <label for="rate">Rate used</label>
+          <div class="inputrow">
+            <input id="rate" type="number" value="6.00" min="0" max="20" step="0.05" inputmode="decimal">
+            <span class="post">% p.a.</span>
+          </div>
+          <input class="rng" id="rate-r" type="range" min="0" max="10" step="0.05" value="6.00" aria-label="Dividend rate slider">
+          <div class="scale"><span>0%</span><span>10%</span></div>
+          <div class="chips" id="ratechips">
+            <button class="chip" type="button" data-r="5.00">5.00</button>
+            <button class="chip" type="button" data-r="5.50">5.50</button>
+            <button class="chip on" type="button" data-r="6.00">6.00</button>
+            <button class="chip" type="button" data-r="6.15">6.15</button>
+          </div>
+        </div>
+
+        <div class="readout" id="readout"></div>
+      </div>
+    </div>
+
+  </section>
+
+  <section class="chartcard">
+      <div class="legend">
+        <span><i class="sw j"></i> Balance and contributions</span>
+        <span><i class="sw b"></i> Dividend credited that year</span>
+        <span><i class="sw t"></i> Target</span>
+      </div>
+      <div class="plot" id="plot"></div>
+      <div class="xaxis" id="xaxis"></div>
+
+      <div class="stats">
+        <div class="stat"><div class="k">Target reached</div><div class="v" id="s-date" style="font-size:16px">-</div></div>
+        <div class="stat"><div class="k">Balance at target</div><div class="v" id="s-final">RM0</div></div>
+        <div class="stat"><div class="k">You put in</div><div class="v j" id="s-contrib">RM0</div></div>
+        <div class="stat"><div class="k">Employer put in</div><div class="v b" id="s-employer">RM0</div></div>
+        <div class="stat"><div class="k">Dividends earned</div><div class="v b" id="s-div">RM0</div></div>
+        <div class="stat"><div class="k">Without dividends</div><div class="v" id="s-nodiv">0 yr</div></div>
+      </div>
+    </section>
+
+  <section class="histcard">
+    <div class="histhead">
+      <h3>Declared dividend rates</h3>
+      <a href="https://www.kwsp.gov.my/en/others/resource-centre/dividend" target="_blank" rel="noopener">Source: KWSP resource centre</a>
+    </div>
+    <p style="color:var(--text-dim);font-size:13px;margin:0" id="histlede"></p>
+    <svg class="histsvg" id="histsvg" viewBox="0 0 900 200" preserveAspectRatio="none" role="img" aria-label="EPF dividend rate history"></svg>
+    <div class="histstats" id="histstats"></div>
+  </section>
+
+  <section class="ledger">
+    <h2>Year by year</h2>
+    <p class="lede">One row per calendar year, because EPF pays its dividend once a year on 31 December. The first row is usually a part year running from your start date to the end of that year. The highlighted row is when the target is crossed.</p>
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Calendar year</th>
+            <th>Rate</th>
+            <th>Opening</th>
+            <th>Contributions</th>
+            <th>Dividend</th>
+            <th>Closing</th>
+            <th>Dividend share of growth</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="notes">
+    <h3>How this is worked out</h3>
+
+    <p style="color:var(--text-dim);font-size:13.5px;margin:0 0 4px">EPF style, for a cycle of <em>n</em> contribution months ending 31 December:</p>
+    <code class="eq">D = r &times; [ B &times; (n &divide; 12) + C &times; n(n &minus; 1) &divide; 24 ]&nbsp;&nbsp;&nbsp;B<sub>next</sub> = B + nC + D</code>
+
+    <p style="color:var(--text-dim);font-size:13.5px;margin:14px 0 4px">Monthly compounding, closed form:</p>
+    <code class="eq">FV = P(1 + i)<sup>n</sup> + C &times; [(1 + i)<sup>n</sup> &minus; 1] &divide; i&nbsp;&nbsp;&nbsp;i = r &divide; 12</code>
+
+    <ul>
+      <li>For a full year, <em>n</em> = 12 and the contribution term becomes 5.5C. That 5.5 is there because contributions arrive month by month rather than all at once: a payment in month <em>m</em> earns dividend for (12 &minus; <em>m</em>) months, and those fractions add up to 5.5 months across the twelve payments.</li>
+      <li>The start date matters. Beginning in January gives a near full stub year of dividend, beginning in November gives almost none, so the same inputs can shift the finish by close to a year.</li>
+      <li>When the target is crossed by the annual dividend rather than by a contribution, the exact day is <strong>31 December</strong>. In practice EPF declares and credits the dividend a few months later, backdated, so treat that day as the accounting date rather than the day the money appears.</li>
+      <li>Dividend rates are declared after the fact and vary. Recent declared rates for conventional savings have sat roughly between 5.0% and 6.3%, so treat any single figure as a scenario, not a forecast.</li>
+      <li>Statutory rates used here are 11% employee, and 13% employer on wages up to RM5,000 or 12% above, for Malaysian members under 60. Non-Malaysian members have contributed 2% and 2% since October 2025. The employer band is retested each projected year, so a rising salary can cross the threshold mid-projection.</li>
+      <li>Account 1, 2 and 3 splits, withdrawals, and the shariah dividend rate are not modelled here. Neither is inflation, so whatever goal you set will buy less in the future than it does today.</li>
+      <li class="flag" id="warnline" style="display:none"></li>
+    </ul>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var $ = function(id){ return document.getElementById(id); };
+  var els = {
+    start:$("start"),
+    goalname:$("goalname"), livesum:$("livesum"), eyebrow:document.querySelector(".answer .eyebrow"),
+    balance:$("balance"), monthly:$("monthly"), growth:$("growth"),
+    salary:$("salary"), emppct:$("emppct"), erpct:$("erpct"), topup:$("topup"),
+    erauto:$("erauto"), sEmployer:$("s-employer"),
+    rate:$("rate"), target:$("target"),
+    headline:$("headline"), headnote:$("headnote"),
+    plot:$("plot"), xaxis:$("xaxis"), tbody:$("tbody"),
+    sDate:$("s-date"),
+    sFinal:$("s-final"), sContrib:$("s-contrib"), sDiv:$("s-div"), sNodiv:$("s-nodiv"),
+    warn:$("warnline")
+  };
+
+  var precision = "month";
+  var contribMode = "salary";   // salary | fixed
+  var creditMode = "epf";       // epf | monthly
+  var WAGE_BAND = 5000;         // employer rate steps down above this monthly wage
+
+  var MAX_YEARS = 80;
+  var LAST_ACTUAL = 2025;      // 2025 rate declared 28 February 2026
+  var MIN_RATE = 2.50;         // statutory floor for Simpanan Konvensional
+
+  // Official declared rates, KWSP resource centre
+  var SK = {2025:6.15,2024:6.30,2023:5.50,2022:5.35,2021:6.10,2020:5.20,2019:5.45,
+    2018:6.15,2017:6.90,2016:5.70,2015:6.40,2014:6.75,2013:6.35,2012:6.15,2011:6.00,
+    2010:5.80,2009:5.65,2008:4.50,2007:5.80,2006:5.15,2005:5.00,2004:4.75,2003:4.50,
+    2002:4.25,2001:5.00,2000:6.00,1999:6.84,1996:7.70,1995:7.50,1979:7.25,1964:5.25,1963:5.00};
+  (function(){
+    var span = function(a,b,v){ for(var y=a;y<=b;y++) SK[y]=v; };
+    span(1997,1998,6.70); span(1988,1994,8.00); span(1983,1987,8.50);
+    span(1980,1982,8.00); span(1976,1978,7.00); span(1974,1975,6.60);
+    span(1972,1973,5.85); SK[1971]=5.80; span(1968,1970,5.75);
+    span(1965,1967,5.50); span(1960,1962,4.00); span(1952,1959,2.50);
+  })();
+  var SS = {2025:6.15,2024:6.30,2023:5.40,2022:4.75,2021:5.65,2020:4.90,2019:5.00,2018:5.90,2017:6.40};
+
+  var rateMode = "fixed";      // fixed | avg | trend | replay
+  var portfolio = "sk";
+  var windowN = 10;            // 0 means all available years
+
+  function table(){ return portfolio === "ss" ? SS : SK; }
+  function windowYears(){
+    var t = table();
+    var years = Object.keys(t).map(Number).sort(function(a,b){ return a-b; });
+    if(windowN > 0) years = years.slice(-windowN);
+    return years;
+  }
+  function stats(years){
+    var t = table(), v = years.map(function(y){ return t[y]; });
+    var n = v.length, mean = v.reduce(function(a,b){ return a+b; }, 0) / n;
+    var sorted = v.slice().sort(function(a,b){ return a-b; });
+    var median = n % 2 ? sorted[(n-1)/2] : (sorted[n/2-1] + sorted[n/2]) / 2;
+    // least squares fit against year index
+    var mx = (n - 1) / 2, sxy = 0, sxx = 0;
+    v.forEach(function(val, i){ sxy += (i - mx) * (val - mean); sxx += (i - mx) * (i - mx); });
+    var slope = sxx ? sxy / sxx : 0;
+    var intercept = mean - slope * mx;
+    var ssTot = 0, ssRes = 0;
+    v.forEach(function(val, i){
+      ssTot += Math.pow(val - mean, 2);
+      ssRes += Math.pow(val - (intercept + slope * i), 2);
+    });
+    var r2 = ssTot ? 1 - ssRes / ssTot : 0;
+    var sd = Math.sqrt(v.reduce(function(a,b){ return a + Math.pow(b - mean, 2); }, 0) / n);
+    return { years:years, values:v, n:n, mean:mean, median:median, sd:sd,
+             min:sorted[0], max:sorted[n-1], slope:slope, intercept:intercept, r2:r2 };
+  }
+  function clampRate(x){ return Math.max(MIN_RATE, Math.min(20, x)); }
+
+  // employer statutory rate depends on the monthly wage band
+  function autoEmployerPct(salary){ return salary <= WAGE_BAND ? 13 : 12; }
+
+  // returns a function mapping cycle index to { emp, er, total } monthly ringgit
+  function buildContribFn(){
+    var g = Math.max(0, num(els.growth, 0)) / 100;
+    if(contribMode === "fixed"){
+      var base = Math.max(0, num(els.monthly, 0));
+      return function(cycle){
+        var v = base * Math.pow(1 + g, cycle);
+        return { emp:v, er:0, total:v, salary:0, erPct:0 };
+      };
+    }
+    var sal0 = Math.max(0, num(els.salary, 0));
+    var ep = Math.max(0, num(els.emppct, 0));
+    var manualEr = Math.max(0, num(els.erpct, 0));
+    var auto = els.erauto.checked;
+    var top0 = Math.max(0, num(els.topup, 0));
+    return function(cycle){
+      var sal = sal0 * Math.pow(1 + g, cycle);
+      var top = top0 * Math.pow(1 + g, cycle);
+      var erPct = auto ? autoEmployerPct(sal) : manualEr;
+      var emp = sal * ep / 100 + top;
+      var er = sal * erPct / 100;
+      return { emp:emp, er:er, total:emp + er, salary:sal, erPct:erPct };
+    };
+  }
+
+  // returns a function mapping a calendar year to a decimal rate
+  function buildRateFn(){
+    if(rateMode === "fixed"){
+      var f = Math.max(0, num(els.rate, 0)) / 100;
+      return function(){ return f; };
+    }
+    var s = stats(windowYears());
+    if(rateMode === "avg"){
+      return function(){ return s.mean / 100; };
+    }
+    if(rateMode === "trend"){
+      var lastYear = s.years[s.n - 1];
+      return function(y){
+        return clampRate(s.intercept + s.slope * (s.n - 1 + (y - lastYear))) / 100;
+      };
+    }
+    // replay: loop the window's actual sequence forward
+    var firstProj = LAST_ACTUAL + 1;
+    return function(y){
+      var k = Math.max(0, y - firstProj) % s.n;
+      return s.values[k] / 100;
+    };
+  }
+
+  function rm(n){
+    if(!isFinite(n)) return "RM0";
+    return "RM" + Math.round(n).toLocaleString("en-US");
+  }
+  function rmShort(n){
+    if(n >= 1000000) return "RM" + (n/1000000).toFixed(2) + "m";
+    if(n >= 1000) return "RM" + Math.round(n/1000) + "k";
+    return "RM" + Math.round(n);
+  }
+  function dur(months){
+    if(months <= 0) return "Already there";
+    var y = Math.floor(months/12), m = months % 12;
+    var parts = [];
+    if(y) parts.push(y + (y === 1 ? " year" : " years"));
+    if(m) parts.push(m + (m === 1 ? " month" : " months"));
+    return parts.join(" ");
+  }
+  function durPlain(months){
+    var y = Math.floor(months/12), m = months % 12;
+    if(!y) return m + " mo";
+    return y + " yr" + (m ? " " + m + " mo" : "");
+  }
+  function addMonths(d, n){
+    var out = new Date(d.getFullYear(), d.getMonth(), 1);
+    out.setMonth(out.getMonth() + n);
+    var lastDay = new Date(out.getFullYear(), out.getMonth() + 1, 0).getDate();
+    out.setDate(Math.min(d.getDate(), lastDay));
+    return out;
+  }
+  function fmtDate(d, precision){
+    if(!d) return "-";
+    if(precision === "year") return String(d.getFullYear());
+    if(precision === "month") return d.toLocaleDateString("en-GB", { month:"long", year:"numeric" });
+    return d.toLocaleDateString("en-GB", { day:"numeric", month:"long", year:"numeric" });
+  }
+  function parseStart(){
+    var v = els.start.value;
+    if(v){
+      var p = v.split("-");
+      var d = new Date(+p[0], +p[1] - 1, +p[2]);
+      if(!isNaN(d.getTime())) return d;
+    }
+    return new Date();
+  }
+  function num(el, fallback){
+    var v = parseFloat(el.value);
+    return isFinite(v) ? v : fallback;
+  }
+
+  // ---- core projection, aligned to calendar years ----
+  // EPF credits one dividend at the end of each calendar year, so the first
+  // cycle after the start date is usually a stub of fewer than 12 months.
+  function project(P, contribFn, rateFn, target, mode, start){
+    var rows = [], balance = P, reached = null, reachedBal = P, reachedDate = null;
+    var totalContrib = 0, totalDiv = 0, totalEmp = 0, totalEr = 0;
+
+    if(balance >= target){
+      return { rows:[], reached:0, reachedBal:balance, reachedDate:new Date(start),
+               totalContrib:0, totalDiv:0, totalEmp:0, totalEr:0, capped:false };
+    }
+
+    var startMonth = start.getMonth();          // 0 = January
+    var year = start.getFullYear();
+    var elapsed = 0;                            // months since the start date
+    var cycle = 0;
+
+    while(cycle < MAX_YEARS){
+      // months in this cycle: stub to 31 December first, then full years
+      var n = (cycle === 0) ? (11 - startMonth) : 12;
+      if(n === 0){ cycle++; year++; continue; }  // started in December, no room for a stub
+
+      var opening = balance;
+      var cc = contribFn(cycle);
+      var C = cc.total;
+      var contrib = 0, dividend = 0;
+      var r = rateFn(year);
+
+      if(mode === "monthly"){
+        var i = r / 12;
+        for(var m = 1; m <= n; m++){
+          var interest = balance * i;
+          balance = balance + interest + C;
+          dividend += interest;
+          contrib += C;
+          if(reached === null && balance >= target){
+            reached = elapsed + m;
+            reachedBal = balance;
+            reachedDate = addMonths(start, elapsed + m);
+          }
+        }
+      } else {
+        // contributions land monthly, dividend lands once on 31 December
+        for(var m2 = 1; m2 <= n; m2++){
+          var running = opening + C * m2;
+          if(reached === null && running >= target){
+            reached = elapsed + m2;
+            reachedBal = running;
+            reachedDate = addMonths(start, elapsed + m2);
+          }
+        }
+        contrib = C * n;
+        // opening sits for n/12 of the year, each contribution for a shrinking slice
+        dividend = r * (opening * (n / 12) + C * (n * (n - 1) / 24));
+        balance = opening + contrib + dividend;
+        if(reached === null && balance >= target){
+          reached = elapsed + n;
+          reachedBal = balance;
+          reachedDate = new Date(year, 11, 31);
+        }
+      }
+
+      totalContrib += contrib;
+      totalEmp += cc.emp * n;
+      totalEr += cc.er * n;
+      totalDiv += dividend;
+      rows.push({
+        label: String(year) + (cycle === 0 && n < 12 ? " (part)" : ""),
+        rate: r, months: n, emp: cc.emp * n, er: cc.er * n, salary: cc.salary, opening:opening, contrib:contrib, dividend:dividend, closing:balance
+      });
+
+      elapsed += n;
+      year++;
+      cycle++;
+      if(reached !== null) break;
+    }
+
+    return {
+      rows:rows, reached:reached, reachedBal:reachedBal, reachedDate:reachedDate,
+      totalContrib:totalContrib, totalDiv:totalDiv, totalEmp:totalEmp, totalEr:totalEr,
+      capped:(reached === null)
+    };
+  }
+
+  // months needed with contributions only, no dividend
+  function noDividendMonths(P, contribFn, target){
+    if(P >= target) return 0;
+    if(contribFn(0).total <= 0) return Infinity;
+    var bal = P;
+    for(var y = 1; y <= 400; y++){
+      var C = contribFn(y - 1).total;
+      for(var m = 1; m <= 12; m++){
+        bal += C;
+        if(bal >= target) return (y - 1) * 12 + m;
+      }
+    }
+    return Infinity;
+  }
+
+  // ---- monthly contribution breakdown ----
+  function renderContrib(contribFn){
+    var c = contribFn(0);
+    var salaryOn = contribMode === "salary";
+    $("salaryblock").hidden = !salaryOn;
+    $("fixedblock").hidden = salaryOn;
+    $("growthlabel").textContent = salaryOn ? "Salary grows each year by" : "Contribution grows each year by";
+
+    if(salaryOn && els.erauto.checked){
+      var auto = autoEmployerPct(Math.max(0, num(els.salary, 0)));
+      if(parseFloat(els.erpct.value) !== auto){
+        els.erpct.value = auto;
+        if(sliders && sliders.erpct) pushToSlider("erpct");
+      }
+    }
+    $("erctrl").classList.toggle("dim", salaryOn && els.erauto.checked);
+
+    var html = "";
+    if(salaryOn){
+      var sal = c.salary, ep = Math.max(0, num(els.emppct, 0)), top = Math.max(0, num(els.topup, 0));
+      html += row("Salary", rm(sal));
+      html += row("<span class='me'>You, " + ep.toFixed(1).replace(/\.0$/,"") + "%</span>", rm(sal * ep / 100), "me");
+      if(top > 0) html += row("<span class='me'>Voluntary top-up</span>", rm(top), "me");
+      html += row("<span class='co'>Employer, " + c.erPct.toFixed(1).replace(/\.0$/,"") + "%</span>", rm(c.er), "co");
+      html += '<div class="row tot"><span>Into EPF each month</span><span>' + rm(c.total) + '</span></div>';
+      html += '<div class="row"><span class="lbl">Per year</span><span class="lbl">' + rm(c.total * 12) + '</span></div>';
+    } else {
+      html += '<div class="row tot"><span>Into EPF each month</span><span>' + rm(c.total) + '</span></div>';
+      html += '<div class="row"><span class="lbl">Per year</span><span class="lbl">' + rm(c.total * 12) + '</span></div>';
+      html += '<div class="row"><span class="lbl">Counted entirely as yours</span><span class="lbl">no employer share</span></div>';
+    }
+    $("breakdown").innerHTML = html;
+  }
+  function row(label, val, cls){
+    return '<div class="row"><span class="lbl">' + label + '</span><span class="' + (cls || "") + '">' + val + '</span></div>';
+  }
+
+  // ---- rate history chart and readout ----
+  function renderRates(){
+    var s = stats(windowYears());
+    var t = table();
+    var allYears = Object.keys(t).map(Number).sort(function(a,b){ return a-b; });
+    var shown = allYears.slice(-Math.max(s.n, 20));   // always show some context
+    var rateFn = buildRateFn();
+    var projYears = [];
+    for(var k = 1; k <= 8; k++) projYears.push(LAST_ACTUAL + k);
+
+    // readout text
+    var box = $("ratebox"), out = $("readout"), lbl = document.querySelector('label[for="rate"]');
+    box.classList.toggle("dim", rateMode !== "fixed");
+    if(rateMode !== "fixed"){
+      els.rate.value = (rateFn(LAST_ACTUAL + 1) * 100).toFixed(2);
+      if(typeof pushToSlider === "function" && sliders && sliders.rate) pushToSlider("rate");
+    }
+    lbl.textContent = (rateMode === "fixed") ? "Rate used"
+      : (rateMode === "avg") ? "Rate used (flat, from history)"
+      : "Rate used (first year, then varies)";
+    var span = s.years[0] + " to " + s.years[s.n - 1];
+    if(rateMode === "fixed"){
+      out.innerHTML = "Flat <b>" + (num(els.rate, 0)).toFixed(2) + "%</b> every year. The " + span +
+        " average was <b>" + s.mean.toFixed(2) + "%</b>.";
+    } else if(rateMode === "avg"){
+      out.innerHTML = "Flat <b>" + s.mean.toFixed(2) + "%</b>, the mean of " + span +
+        ". Actual rates in that window ranged " + s.min.toFixed(2) + "% to " + s.max.toFixed(2) +
+        "%, standard deviation " + s.sd.toFixed(2) + " points.";
+    } else if(rateMode === "trend"){
+      var first = clampRate(s.intercept + s.slope * s.n);
+      var later = clampRate(s.intercept + s.slope * (s.n + 9));
+      var weak = s.r2 < 0.25;
+      out.innerHTML = "Straight line fitted to " + span + ": <b>" + (s.slope >= 0 ? "+" : "") +
+        s.slope.toFixed(3) + "</b> points per year, giving <b>" + first.toFixed(2) + "%</b> next year and <b>" +
+        later.toFixed(2) + "%</b> ten years out. " +
+        (weak ? "<span class='weak'>R&sup2; is only " + s.r2.toFixed(3) +
+                ", so this line explains almost none of the variation. Treat it as decoration, not a forecast.</span>"
+              : "R&sup2; " + s.r2.toFixed(3) + ".");
+    } else {
+      out.innerHTML = "Repeating the actual " + span + " sequence on a loop, starting with <b>" +
+        s.values[0].toFixed(2) + "%</b> in " + (LAST_ACTUAL + 1) +
+        ". Useful for seeing whether a bad run early on matters more than a bad run late.";
+    }
+
+    // stat tiles
+    $("histstats").innerHTML =
+      tile("Mean", s.mean.toFixed(2) + "%") +
+      tile("Median", s.median.toFixed(2) + "%") +
+      tile("Range", s.min.toFixed(2) + " to " + s.max.toFixed(2)) +
+      tile("Std dev", s.sd.toFixed(2) + " pp") +
+      tile("Trend", (s.slope >= 0 ? "+" : "") + s.slope.toFixed(3) + " pp/yr") +
+      tile("R squared", s.r2.toFixed(3));
+
+    $("histlede").innerHTML = "Simpanan " + (portfolio === "ss" ? "Shariah" : "Konvensional") +
+      ", declared rates through " + LAST_ACTUAL + ". Dashed section is what this calculator assumes going forward.";
+
+    // svg
+    var W = 900, H = 200, padL = 34, padR = 8, padT = 12, padB = 20;
+    var years = shown.concat(projYears);
+    var vals = shown.map(function(y){ return t[y]; })
+                    .concat(projYears.map(function(y){ return rateFn(y) * 100; }));
+    var lo = Math.max(0, Math.min.apply(null, vals) - 1);
+    var hi = Math.max.apply(null, vals) + 1;
+    var X = function(i){ return padL + i * (W - padL - padR) / (years.length - 1); };
+    var Y = function(v){ return padT + (hi - v) * (H - padT - padB) / (hi - lo); };
+
+    var svg = "";
+    // gridlines
+    for(var gv = Math.ceil(lo); gv <= hi; gv++){
+      svg += '<line x1="' + padL + '" y1="' + Y(gv) + '" x2="' + (W - padR) + '" y2="' + Y(gv) +
+             '" stroke="var(--line)" stroke-width="1"/>' +
+             '<text x="4" y="' + (Y(gv) + 3) + '">' + gv + '%</text>';
+    }
+    // mean line
+    svg += '<line x1="' + padL + '" y1="' + Y(s.mean) + '" x2="' + (W - padR) + '" y2="' + Y(s.mean) +
+           '" stroke="var(--brass)" stroke-width="1.5" stroke-dasharray="2 3"/>';
+    // actual polyline
+    var ptsA = shown.map(function(y, i){ return X(i) + "," + Y(t[y]); }).join(" ");
+    svg += '<polyline points="' + ptsA + '" fill="none" stroke="var(--jade)" stroke-width="2"/>';
+    // projected polyline, continuing from the last actual point
+    var ptsP = [X(shown.length - 1) + "," + Y(t[shown[shown.length - 1]])]
+      .concat(projYears.map(function(y, i){ return X(shown.length + i) + "," + Y(rateFn(y) * 100); })).join(" ");
+    svg += '<polyline points="' + ptsP + '" fill="none" stroke="var(--warn)" stroke-width="2" stroke-dasharray="5 4"/>';
+    // dots and year labels
+    shown.forEach(function(y, i){
+      svg += '<circle cx="' + X(i) + '" cy="' + Y(t[y]) + '" r="2.5" fill="var(--jade)"><title>' + y + ': ' + t[y].toFixed(2) + '%</title></circle>';
+    });
+    var step = Math.ceil(years.length / 14);
+    years.forEach(function(y, i){
+      if(i % step === 0) svg += '<text x="' + X(i) + '" y="' + (H - 4) + '" text-anchor="middle">' + String(y).slice(2) + '</text>';
+    });
+    $("histsvg").innerHTML = svg;
+  }
+  function tile(k, v){ return '<div><div class="k">' + k + '</div><div class="v">' + v + '</div></div>'; }
+  function render(){
+    var P = Math.max(0, num(els.balance, 0));
+    var contribFn = buildContribFn();
+    renderContrib(contribFn);
+    renderRates();
+    var rateFn = buildRateFn();
+    var T = Math.max(1, num(els.target, 1));
+    var mode = creditMode;
+    var start = parseStart();
+
+    var res = project(P, contribFn, rateFn, T, mode, start);
+    els.warn.style.display = "none";
+
+    // headline
+    if(res.reached === 0){
+      els.headline.innerHTML = "Already <em>there</em>";
+      els.headnote.innerHTML = "The balance of <strong>" + rm(P) + "</strong> is at or above the target of <strong>" + rm(T) + "</strong> on " + fmtDate(start, "exact") + ".";
+      els.sDate.textContent = fmtDate(start, precision);
+    } else if(res.capped){
+      els.headline.innerHTML = "Out of <em>reach</em>";
+      els.headnote.innerHTML = "At these settings the balance does not reach <strong>" + rm(T) + "</strong> within " + MAX_YEARS + " years. Raise the contribution or the dividend rate.";
+      els.sDate.textContent = "Never";
+      els.warn.style.display = "list-item";
+      els.warn.textContent = "Projection stopped at " + MAX_YEARS + " years without reaching the target.";
+    } else {
+      var mo = res.reached;
+      var yy = Math.floor(mo / 12), mm = mo % 12;
+      var h = "";
+      if(yy) h += yy + (yy === 1 ? " year " : " years ");
+      if(mm) h += "<em>" + mm + (mm === 1 ? " month" : " months") + "</em>";
+      if(!mm) h = "<em>" + yy + (yy === 1 ? " year" : " years") + "</em>";
+      els.headline.innerHTML = h.trim();
+
+      var landedOnDividend = (res.reachedDate.getMonth() === 11 && res.reachedDate.getDate() === 31 && mode === "epf");
+      els.sDate.textContent = fmtDate(res.reachedDate, precision);
+      els.headnote.innerHTML =
+        "Counting from <strong>" + fmtDate(start, "exact") + "</strong>, the balance crosses <strong>" + rm(T) +
+        "</strong> on <strong>" + fmtDate(res.reachedDate, precision) + "</strong>" +
+        (landedOnDividend ? " when that year's dividend is credited" : " on a contribution") +
+        ", landing at " + rm(res.reachedBal) + ". Of the " + rm(res.reachedBal - P) + " added along the way, <strong>" +
+        rm(res.totalDiv) + "</strong> is dividend and " + rm(res.totalContrib) + " is contributions" +
+        (contribMode === "salary" && res.totalEr > 0
+          ? " (" + rm(res.totalEmp) + " from you, " + rm(res.totalEr) + " from your employer)." : ".");
+    }
+
+    // stats
+    els.sFinal.textContent = rm(res.reached === 0 ? P : res.reachedBal);
+    // goal wording and the pinned summary bar
+    var goal = (els.goalname.value || "").trim();
+    els.eyebrow.textContent = goal ? ("Time to " + goal) : "Time to goal";
+    if(res.reached === 0){
+      els.livesum.innerHTML = "<span>" + (goal || "Goal") + " <b>" + rm(T) + "</b></span><span class='hl'>Already there</span>";
+    } else if(res.capped){
+      els.livesum.innerHTML = "<span>" + (goal || "Goal") + " <b>" + rm(T) + "</b></span><span>Not reached</span>";
+    } else {
+      els.livesum.innerHTML =
+        "<span>" + (goal || "Goal") + " <b>" + rm(T) + "</b></span>" +
+        "<span class='hl'>" + dur(res.reached) + "</span>" +
+        "<span><b>" + fmtDate(res.reachedDate, precision) + "</b></span>";
+    }
+
+    els.sContrib.textContent = rm(res.totalEmp);
+    els.sEmployer.textContent = rm(res.totalEr);
+    els.sDiv.textContent = rm(res.totalDiv);
+    var nd = noDividendMonths(P, contribFn, T);
+    els.sNodiv.textContent = (nd === Infinity) ? "Never" : durPlain(nd);
+
+    // chart
+    els.plot.innerHTML = "";
+    els.xaxis.innerHTML = "";
+    var rows = res.rows;
+    if(!rows.length){
+      els.plot.innerHTML = '<div style="color:var(--text-dim);font-size:13px;align-self:center;width:100%;text-align:center">Nothing to project.</div>';
+    } else {
+      var peak = Math.max(T, rows[rows.length - 1].closing) * 1.06;
+      var showEvery = rows.length > 18 ? Math.ceil(rows.length / 14) : 1;
+
+      rows.forEach(function(row, idx){
+        var baseVal = row.opening + row.contrib;
+        var col = document.createElement("div");
+        col.className = "col";
+        col.title = row.label + ": closing " + rm(row.closing);
+
+        var cap = document.createElement("div");
+        cap.className = "cap" + (idx === rows.length - 1 ? " show" : "");
+        cap.style.bottom = "calc(" + (row.closing / peak * 100) + "% + 4px)";
+        cap.textContent = rmShort(row.closing);
+        col.appendChild(cap);
+
+        var stack = document.createElement("div");
+        stack.className = "stack";
+
+        var dv = document.createElement("div");
+        dv.className = "seg div";
+        dv.style.height = (row.dividend / peak * 100) + "%";
+
+        var bs = document.createElement("div");
+        bs.className = "seg base";
+        bs.style.height = (baseVal / peak * 100) + "%";
+
+        stack.appendChild(dv);
+        stack.appendChild(bs);
+        col.appendChild(stack);
+        els.plot.appendChild(col);
+
+        var x = document.createElement("div");
+        x.textContent = (idx % showEvery === 0) ? ("'" + row.label.slice(2, 4)) : "";
+        els.xaxis.appendChild(x);
+      });
+
+      var line = document.createElement("div");
+      line.className = "targetline";
+      line.style.bottom = (T / peak * 100) + "%";
+      line.innerHTML = "<b>" + rmShort(T) + "</b>";
+      els.plot.appendChild(line);
+    }
+
+    // ledger
+    els.tbody.innerHTML = "";
+    var hitLabel = res.reachedDate ? String(res.reachedDate.getFullYear()) : "";
+    rows.forEach(function(row){
+      var growthTotal = row.contrib + row.dividend;
+      var share = growthTotal > 0 ? (row.dividend / growthTotal * 100) : 0;
+      var tr = document.createElement("tr");
+      if(row.label.slice(0, 4) === hitLabel) tr.className = "hit";
+      tr.innerHTML =
+        "<td>" + row.label + "</td>" +
+        "<td class='d'>" + (row.rate * 100).toFixed(2) + "%</td>" +
+        "<td class='c'>" + rm(row.opening) + "</td>" +
+        "<td class='c'>" + rm(row.contrib) + "</td>" +
+        "<td class='d'>" + rm(row.dividend) + "</td>" +
+        "<td>" + rm(row.closing) + "</td>" +
+        "<td class='c'>" + share.toFixed(0) + "%</td>";
+      els.tbody.appendChild(tr);
+    });
+  }
+
+  // ---- wiring ----
+  // start date defaults to today
+  (function(){
+    var t = new Date();
+    var pad = function(n){ return (n < 10 ? "0" : "") + n; };
+    els.start.value = t.getFullYear() + "-" + pad(t.getMonth() + 1) + "-" + pad(t.getDate());
+  })();
+  els.goalname.addEventListener("input", render);
+  els.start.addEventListener("change", render);
+  els.start.addEventListener("input", render);
+
+  var precBtns = Array.prototype.slice.call(document.querySelectorAll("#precision button"));
+  precBtns.forEach(function(b){
+    b.addEventListener("click", function(){
+      precision = b.dataset.p;
+      precBtns.forEach(function(x){ x.classList.toggle("on", x === b); });
+      render();
+    });
+  });
+
+  function segGroup(id, attr, onPick){
+    var btns = Array.prototype.slice.call(document.querySelectorAll("#" + id + " button"));
+    btns.forEach(function(b){
+      b.addEventListener("click", function(){
+        btns.forEach(function(x){ x.classList.toggle("on", x === b); });
+        onPick(b.getAttribute(attr));
+        render();
+      });
+    });
+  }
+  segGroup("ratemodes", "data-m", function(v){ rateMode = v; });
+  segGroup("portfolio", "data-f", function(v){
+    portfolio = v;
+    // Shariah rates only exist from 2017, so cap the window
+    if(v === "ss" && windowN > 9){
+      windowN = 0;
+      Array.prototype.slice.call(document.querySelectorAll("#window button")).forEach(function(x){
+        x.classList.toggle("on", x.getAttribute("data-w") === "0");
+      });
+    }
+  });
+  segGroup("window", "data-w", function(v){ windowN = parseInt(v, 10); });
+  segGroup("contribsrc", "data-c", function(v){ contribMode = v; });
+  els.erauto.addEventListener("change", render);
+
+  var KEYS = ["balance","monthly","growth","rate","target","salary","emppct","erpct","topup"];
+  var sliders = {};
+  KEYS.forEach(function(k){ sliders[k] = $(k + "-r"); });
+
+  function paint(k){
+    var s = sliders[k];
+    var lo = parseFloat(s.min), hi = parseFloat(s.max), v = parseFloat(s.value);
+    var pct = hi > lo ? ((v - lo) / (hi - lo) * 100) : 0;
+    s.style.setProperty("--fill", pct + "%");
+  }
+
+  function pushToSlider(k){
+    var s = sliders[k];
+    var v = parseFloat(els[k].value);
+    if(!isFinite(v)) return;
+    if(v > parseFloat(s.max)) s.max = String(v);   // let typed values stretch the track
+    s.value = String(Math.max(parseFloat(s.min), v));
+    paint(k);
+  }
+
+  KEYS.forEach(function(k){
+    // typing in the box moves the slider
+    els[k].addEventListener("input", function(){
+      pushToSlider(k);
+      if(k === "rate") syncChips();
+      render();
+    });
+    // dragging the slider fills the box
+    sliders[k].addEventListener("input", function(){
+      els[k].value = sliders[k].value;
+      paint(k);
+      if(k === "rate") syncChips();
+      if(k === "target") syncTargetChips();
+      render();
+    });
+    paint(k);
+  });
+
+  var tchips = Array.prototype.slice.call(document.querySelectorAll("#targetchips .chip"));
+  function syncTargetChips(){
+    var v = parseFloat(els.target.value);
+    tchips.forEach(function(c){ c.classList.toggle("on", parseFloat(c.dataset.t) === v); });
+  }
+  tchips.forEach(function(c){
+    c.addEventListener("click", function(){
+      els.target.value = c.dataset.t;
+      pushToSlider("target"); syncTargetChips(); render();
+    });
+  });
+
+  var chips = Array.prototype.slice.call(document.querySelectorAll("#ratechips .chip"));
+  function syncChips(){
+    var v = parseFloat(els.rate.value);
+    chips.forEach(function(c){
+      c.classList.toggle("on", Math.abs(parseFloat(c.dataset.r) - v) < 0.0001);
+    });
+  }
+  chips.forEach(function(c){
+    c.addEventListener("click", function(){
+      els.rate.value = c.dataset.r;
+      pushToSlider("rate");
+      syncChips();
+      render();
+    });
+  });
+
+  segGroup("creditmode", "data-cm", function(v){ creditMode = v; });
+
+  // theme
+  var btn = $("themebtn");
+  btn.addEventListener("click", function(){
+    var cur = document.documentElement.getAttribute("data-theme");
+    var next = cur === "dark" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", next);
+    btn.textContent = next === "dark" ? "Light mode" : "Dark mode";
+  });
+
+  // fade the pinned summary in once the big answer scrolls away
+  (function(){
+    var bar = $("topbar"), anchor = document.querySelector(".answer");
+    if(!("IntersectionObserver" in window) || !anchor) return;
+    new IntersectionObserver(function(entries){
+      bar.classList.toggle("stuck", !entries[0].isIntersecting);
+    }, { threshold: 0 }).observe(anchor);
+  })();
+
+  render();
+})();
+</script>
+</body>
+</html>
