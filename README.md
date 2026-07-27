@@ -2,7 +2,7 @@
 
 A single page calculator that estimates when your Malaysian EPF savings will reach a target amount.
 
-**Live:** https://darren38.github.io/EPF-Calculator/
+**Live:** https://darren38.github.io/EPF-Goal-Planner/
 
 ## Features
 
