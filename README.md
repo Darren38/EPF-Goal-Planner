@@ -6,10 +6,15 @@ A single page calculator that estimates when your Malaysian EPF savings will rea
 
 ## Features
 
+**Guided setup**
+- Step by step wizard walks through your goal, age, current balance, contribution source and any yearly extras
+- Employed or pay in yourself, each with its own set of questions
+- Skip the wizard any time and jump straight to the dashboard
+
 **Goals**
 - Quick presets of RM250k, RM500k, RM1m and RM2m
 - EPF retirement benchmarks: Basic RM390k, Adequate RM650k, Enhanced RM1.3m
-- Or set any custom target
+- Or set any custom target, with an optional name for it
 
 **Contributions**
 - From salary, using your share and the employer share of EPF wages
