@@ -2311,6 +2311,7 @@ section[id]{scroll-margin-top:70px}
   // Every field here is a front end onto the real input: it writes the value across and
   // fires the same event, so there is one source of truth and skipping simply leaves
   // whatever default was already there.
+  var restoredAtLoad = false;    // set by init, so the dialog knows if you have been here before
   var setup = (function(){
     var wrap = $("setupwrap"), modal = $("setupmodal");
     var steps = Array.prototype.slice.call(modal.querySelectorAll(".mstep"));
@@ -2370,9 +2371,26 @@ section[id]{scroll-margin-top:70px}
       var f = steps[i].querySelector("input,select,button");
       if(f) setTimeout(function(){ f.focus(); }, 30);
     }
+    // the dialog opens every time, so it should acknowledge settings you already have
+    // rather than offering the same blank welcome on every visit
+    function dressChoice(){
+      var b = $("startdash").querySelector("b"), s = $("startdash").querySelector("span");
+      if(restoredAtLoad){
+        var goal = (els.goalname.value || "").trim();
+        b.textContent = "Carry on with my saved figures";
+        s.textContent = "Still set to " + (goal ? goal + ", " : "") + "a goal of " +
+          rm(Math.max(1, num(els.target, 1))) + " at age " + Math.round(clamp(num(els.age, 30), 0, 120)) +
+          ". Change any of them at any time.";
+      } else {
+        b.textContent = "Take me straight to the dashboard";
+        s.textContent = "Starts with example figures for a 30 year old on RM5,000 a month. " +
+          "Change any of them at any time.";
+      }
+    }
     function open(){
       lastFocus = document.activeElement;
       prefill();
+      dressChoice();
       wrap.hidden = false;
       wrap.classList.add("open");
       document.body.style.overflow = "hidden";
@@ -2470,8 +2488,9 @@ section[id]{scroll-margin-top:70px}
     syncChips();
     syncTargetChips();
     render();
-    // only on a genuinely first visit: anyone with saved settings goes straight in
-    if(!restored) setup.open();
+    // greet on every open of the file, whether or not there are saved settings
+    restoredAtLoad = restored;
+    setup.open();
   })();
 })();
 </script>
