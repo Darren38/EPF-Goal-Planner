@@ -60,6 +60,9 @@ html[data-theme="kwsp"]{
 }
 html[data-theme="kwsp"] .seg.div{background:#C79A3C}   /* crest gold, as a fill */
 *{box-sizing:border-box}
+/* the hidden attribute must always win: a class that sets display (flex, grid) would otherwise
+   quietly show an element the script has hidden */
+[hidden]{display:none !important}
 html,body{margin:0;padding:0}
 body{
   background:var(--ink);
@@ -111,6 +114,15 @@ body{
   .themebtn{padding:7px 9px;letter-spacing:.06em}
   .topbtns{gap:10px}
 }
+@media(max-width:380px){
+  .topbar-in{padding:10px 14px;gap:10px}
+  .topbtns{gap:6px}
+  .themebtn{padding:6px 6px;font-size:10px;letter-spacing:.04em}
+  .themeswitch{gap:3px}
+  .tsw{width:21px;height:21px}
+  .tsw i{width:13px;height:13px}
+  .mark .kwsp{letter-spacing:.08em}
+}
 .livesum{
   display:flex;align-items:baseline;gap:16px;flex:1;justify-content:flex-end;
   font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--text-dim);
@@ -121,7 +133,7 @@ body{
 .livesum b{color:var(--text);font-weight:600}
 .livesum .hl{color:var(--jade);font-weight:600}
 @media(max-width:900px){.livesum{display:none}}
-.mark{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.mark{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;white-space:nowrap}
 .mark .kwsp{
   font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.18em;
   text-transform:uppercase;color:var(--jade);
@@ -332,6 +344,8 @@ html[data-theme="kwsp"] .mx-div{background:#C79A3C}
   .dock b{font-family:"Bricolage Grotesque",sans-serif;font-size:17px;font-weight:800;letter-spacing:-.01em}
   .dock .dr{text-align:right}
   .wrap{padding-bottom:110px}
+  /* anything scrolled to or focused stops above the dock, never underneath it */
+  html{scroll-padding-bottom:84px}
 }
 
 /* ---------- toast for applied what-ifs ---------- */
@@ -533,7 +547,7 @@ html[data-theme="kwsp"] .chip.on{color:#fff}
 .chiplabel{font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim);margin-top:10px}
 
 /* ---------- projection chart ---------- */
-.chartcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px;margin-top:22px}
+.chartcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px;margin-top:22px;overflow:hidden}
 .legend{display:flex;gap:18px;flex-wrap:wrap;margin-bottom:18px}
 .legend span{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text-dim)}
 .sw{width:11px;height:11px;border-radius:2px;display:inline-block}
@@ -541,7 +555,7 @@ html[data-theme="kwsp"] .chip.on{color:#fff}
 .sw.js{background:var(--jade-soft)}
 .sw.b{background:var(--brass)}
 .sw.t{background:transparent;border-top:2px dashed var(--warn);height:0;width:16px;border-radius:0}
-.plot{position:relative;height:240px;display:flex;align-items:flex-end;gap:5px;margin-top:24px;padding-left:56px}
+.plot{position:relative;height:240px;display:flex;align-items:flex-end;gap:var(--colgap,5px);margin-top:24px;padding-left:56px}
 /* reference lines, so a bar's height can actually be read as a number */
 .gline{position:absolute;left:56px;right:0;border-top:1px solid var(--line);pointer-events:none}
 .gline b{
@@ -560,6 +574,9 @@ html[data-theme="kwsp"] .chip.on{color:#fff}
   font-size:9.5px;color:var(--text-dim);opacity:0;transition:opacity .15s ease;pointer-events:none;
 }
 .col .cap.show{opacity:1}
+.col .cap{white-space:nowrap}
+/* the final balance sits over the last, often very thin, bar: anchor it to the right edge */
+.col:last-of-type .cap{left:auto;right:0;text-align:right}
 .col{cursor:pointer;transition:opacity .15s ease}
 .plot.hovering .col{opacity:.45}
 .plot.hovering .col.active{opacity:1}
@@ -588,10 +605,10 @@ html[data-theme="kwsp"] .chip.on{color:#fff}
   position:absolute;left:-54px;top:-7px;font-family:"IBM Plex Mono",monospace;
   font-size:9.5px;color:var(--warn);font-weight:600;
 }
-.xaxis{display:flex;gap:5px;margin-top:8px;border-top:1px solid var(--line);padding-top:7px;padding-left:56px}
+.xaxis{display:flex;gap:var(--colgap,5px);overflow:hidden;margin-top:8px;border-top:1px solid var(--line);padding-top:7px;padding-left:56px}
 .xaxis div{
   flex:1;min-width:0;text-align:center;font-family:"IBM Plex Mono",monospace;
-  font-size:10px;color:var(--text-dim);overflow:hidden;
+  font-size:10px;color:var(--text-dim);overflow:visible;white-space:nowrap;
 }
 
 /* ---------- stat tiles ---------- */
@@ -663,13 +680,13 @@ tr.flash td{animation:rowflash 1.6s ease-out}
 /* ---------- notes ---------- */
 .eqgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:22px}
 @media(max-width:820px){.eqgrid{grid-template-columns:1fr}}
-.eqcard{border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);overflow:hidden}
+.eqcard{min-width:0;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);overflow:hidden}
 .eqcard .cap{
   font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;
   color:var(--text-dim);padding:10px 14px 0;
 }
 .notegrid{
-  display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:1px;
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(min(330px,100%),1fr));gap:1px;
   background:var(--line);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;
 }
 .note{background:var(--surface);padding:15px 17px}
@@ -2323,7 +2340,11 @@ section[id]{scroll-margin-top:70px}
       return;
     }
     var peak = chartPeak = Math.max(T, rows[rows.length - 1].closing) * 1.06;
-    var showEvery = rows.length > 18 ? Math.ceil(rows.length / 14) : 1;
+    var plotW = Math.max(1, plot.clientWidth - 56);
+    var gap = clamp(Math.floor(plotW / rows.length * 0.25), 1, 5);
+    plot.parentNode.style.setProperty("--colgap", gap + "px");
+    // one year label per ~34px, so labels never run into each other
+    var showEvery = Math.max(1, Math.ceil(rows.length * 34 / plotW));
 
     // reference lines at round amounts, skipping any that would sit on the target line
     var step = niceStep(peak, 4), tFrac = T / peak;
@@ -2369,7 +2390,9 @@ section[id]{scroll-margin-top:70px}
         col.insertAdjacentHTML("beforeend", '<div class="agemark"><span>age 55</span></div>');
       }
       var x = document.createElement("div");
-      x.textContent = (idx % showEvery === 0) ? ("'" + String(r.year).slice(2)) : "";
+      // a label centred too near the right edge would be cut in half, so it is left off
+      var nearEnd = (rows.length - 1 - idx) * plotW / rows.length < 12;
+      x.textContent = (idx % showEvery === 0 && !(nearEnd && idx > 0)) ? ("'" + String(r.year).slice(2)) : "";
       els.xaxis.appendChild(x);
     });
 
@@ -2419,7 +2442,12 @@ section[id]{scroll-margin-top:70px}
   els.plot.addEventListener("click", function(e){
     var c = e.target.closest(".col"); if(c) showTip(c);
   });
-  els.plot.addEventListener("mouseleave", hideTip);
+  els.plot.addEventListener("pointerdown", function(e){
+    if(e.pointerType === "mouse") return;
+    var c = e.target.closest(".col"); if(c) showTip(c);
+  });
+  // a touch fires mouseleave as soon as the finger lifts, so only a real mouse hides it this way
+  els.plot.addEventListener("pointerleave", function(e){ if(e.pointerType === "mouse") hideTip(); });
   // a tap anywhere else puts the tooltip away on touch screens
   document.addEventListener("click", function(e){ if(!els.plot.contains(e.target)) hideTip(); });
 
@@ -2924,8 +2952,11 @@ section[id]{scroll-margin-top:70px}
         if(at === 0) show(1); else if(at < LAST) show(at + 1); else close();
       }
     });
+    // Escape is heard anywhere on the page, so it works even before focus has moved into the dialog
+    document.addEventListener("keydown", function(e){
+      if(e.key === "Escape" && !wrap.hidden){ e.preventDefault(); close(); }
+    });
     wrap.addEventListener("keydown", function(e){
-      if(e.key === "Escape"){ e.preventDefault(); close(); return; }
       if(e.key !== "Tab") return;
       // keep focus inside the dialog while it is open
       var f = Array.prototype.slice.call(
