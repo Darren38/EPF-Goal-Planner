@@ -3040,6 +3040,12 @@ section[id]{scroll-margin-top:70px}
     restoredAtLoad = restored;
     setup.open();
   })();
+
+  // Always fetch the newest files after an update (see sw.js). Registered after the page has loaded so it never
+  // delays it; the planner works the same without it (opened from a file, or blocked).
+  if("serviceWorker" in navigator && window.isSecureContext && location.protocol !== "file:"){
+    window.addEventListener("load", function(){ navigator.serviceWorker.register("sw.js").catch(function(){}); });
+  }
 })();
 </script>
 </body>
