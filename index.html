@@ -21,6 +21,7 @@
   --brass:#E0A92C;
   --brass-soft:#6B4F13;
   --warn:#E0704A;
+  --emp:#5FA8D3;
   --radius:3px;
 }
 html[data-theme="light"]{
@@ -36,6 +37,7 @@ html[data-theme="light"]{
   --brass:#A97A0A;
   --brass-soft:#F0DCA9;
   --warn:#B84A22;
+  --emp:#2F6F98;
 }
 /* Sampled from kwsp.gov.my: the site's primary blue (#144EB6) and pale panel blue
    (#CCE1F5), plus the gold and red from the KWSP crest. The crest gold (#D0A848)
@@ -54,6 +56,7 @@ html[data-theme="kwsp"]{
   --brass:#8A6512;
   --brass-soft:#F0E2BE;
   --warn:#C41B22;
+  --emp:#1F9D8B;
 }
 html[data-theme="kwsp"] .seg.div{background:#C79A3C}   /* crest gold, as a fill */
 *{box-sizing:border-box}
@@ -67,7 +70,7 @@ body{
   -webkit-font-smoothing:antialiased;
   transition:background .25s ease,color .25s ease;
 }
-.wrap{max-width:1120px;margin:0 auto;padding:22px 20px 72px}
+.wrap{max-width:1280px;margin:0 auto;padding:22px 20px 72px}
 
 /* ---------- masthead ---------- */
 .topbar{
@@ -75,7 +78,7 @@ body{
   border-bottom:1px solid var(--line);
 }
 .topbar-in{
-  max-width:1120px;margin:0 auto;padding:11px 20px;
+  max-width:1280px;margin:0 auto;padding:11px 20px;
   display:flex;align-items:center;justify-content:space-between;gap:18px;
 }
 .topbtns{display:flex;gap:14px;flex:0 0 auto;align-items:center}
@@ -134,8 +137,8 @@ body{
 
 /* ---------- headline answer ---------- */
 .answer{padding:8px 0 22px;border-bottom:1px solid var(--line)}
-.answer-grid{display:grid;grid-template-columns:auto 1fr;gap:8px 34px;align-items:end}
-@media(max-width:760px){.answer-grid{grid-template-columns:1fr}}
+.answer-grid{display:grid;grid-template-columns:1fr;gap:14px;align-items:end}
+.answer-note{max-width:72ch}
 .eyebrow{
   font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.16em;
   text-transform:uppercase;color:var(--text-dim);margin-bottom:10px;
@@ -150,17 +153,68 @@ body{
 .answer-note strong,.answer-note b{color:var(--text);font-weight:600}
 
 /* ---------- layout ---------- */
-/* Multi-column rather than a grid: a grid forces every cell in a row to the
-   height of the tallest one, which left large holes under the short cards.
-   Columns balance themselves, and keep doing so as fields show and hide. */
-.deck{
-  column-count:4;column-gap:0;column-rule:1px solid var(--line);margin-top:26px;
-  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+/* Inputs sit in a sticky sidebar beside the results on wide screens, so moving a
+   slider and watching the answer change happen in the same glance. On narrow
+   screens everything stacks: answer, inputs, then the detail. */
+.workspace{display:block}
+.results>*:first-child{margin-top:26px}
+@media(min-width:1080px){
+  .workspace{
+    display:grid;grid-template-columns:minmax(340px,392px) minmax(0,1fr);
+    column-gap:30px;align-items:start;
+  }
+  .workspace>.answer{grid-column:2;grid-row:1}
+  .workspace>.side{
+    grid-column:1;grid-row:1 / span 2;position:sticky;top:64px;margin-top:8px;
+    max-height:calc(100vh - 80px);display:flex;flex-direction:column;
+  }
+  .workspace>.side .deck{flex:1 1 auto;overflow-y:auto;overscroll-behavior:contain;margin-top:0}
+  .workspace>.side .tabs,.workspace>.side .tabfoot{flex:0 0 auto}
+  .workspace>.results{grid-column:2;grid-row:2;min-width:0}
 }
+
+/* ---------- input tabs ---------- */
+.side{margin-top:26px}
+.tabs{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+  border:1px solid var(--line);border-bottom:0;border-radius:var(--radius) var(--radius) 0 0;
+  background:var(--surface-2);overflow:hidden;
+}
+.tab{
+  position:relative;text-align:left;cursor:pointer;border:0;background:transparent;
+  padding:10px 9px 9px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);
+  font-family:inherit;color:var(--text-dim);transition:background .15s ease,color .15s ease;min-width:0;
+}
+.tab:last-child{border-right:0}
+@media(max-width:479px){
+  .tabs{grid-template-columns:1fr 1fr}
+  .tab:nth-child(2){border-right:0}
+  .tab.on::before{height:2px}
+}
+.tab .tk{
+  display:block;font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.08em;
+  text-transform:uppercase;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.tab .tv{
+  display:block;font-size:11.5px;margin-top:3px;color:var(--text-mid);font-variant-numeric:tabular-nums;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.tab:hover{color:var(--text)}
+.tab.on{background:var(--surface);color:var(--jade);border-bottom-color:transparent}
+.tab.on::before{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:var(--jade)}
+.tab:focus-visible{outline:2px solid var(--jade);outline-offset:-2px}
+.deck{
+  background:var(--surface);border:1px solid var(--line);border-top:0;
+  border-radius:0 0 var(--radius) var(--radius);
+}
+.tabpanel{display:none}
+.tabpanel.on{display:block;animation:panelin .22s ease}
+@keyframes panelin{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 .deckcol{
   padding:17px 18px 19px;
   break-inside:avoid;-webkit-column-break-inside:avoid;page-break-inside:avoid;
 }
+.deckcol+.deckcol{border-top:1px solid var(--line)}
 .deckcol>h3{
   font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.16em;
   text-transform:uppercase;color:var(--jade);margin:0 0 14px;font-weight:600;
@@ -172,8 +226,129 @@ body{
 .deck .hint{font-size:10.5px;line-height:1.4}
 .deck .scale{font-size:9px}
 .deck label{font-size:12.5px}
-@media(max-width:1000px){ .deck{column-count:2} }
-@media(max-width:620px){ .deck{column-count:1;column-rule:0} }
+/* between phone and sidebar widths there is room for two columns of fields */
+@media(min-width:700px) and (max-width:1079px){
+  .tabpanel.on{column-count:2;column-gap:0;column-rule:1px solid var(--line)}
+  .deckcol+.deckcol{border-top:0}
+}
+.tabfoot{
+  display:flex;justify-content:space-between;gap:10px;padding:10px 0 0;
+}
+.tabfoot button{
+  font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.06em;
+  background:transparent;border:1px solid var(--line);border-radius:var(--radius);
+  color:var(--text-dim);padding:7px 11px;cursor:pointer;transition:all .15s ease;
+}
+.tabfoot button:hover{color:var(--text);border-color:var(--jade)}
+.tabfoot button.next{background:var(--jade);border-color:var(--jade);color:#fff;margin-left:auto}
+html[data-theme="dark"] .tabfoot button.next{color:var(--ink)}
+.tabfoot button:focus-visible{outline:2px solid var(--jade);outline-offset:2px}
+.tabfoot button[hidden]{display:none}
+
+/* ---------- hero visuals ---------- */
+.hv{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:14px;margin-top:22px}
+.hvcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:15px 17px 16px}
+.hvhead{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.hvk{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--text-dim)}
+.hvs{font-size:12px;color:var(--text-mid)}
+.jrow{display:flex;align-items:center;gap:14px}
+.ring{width:66px;height:66px;flex:0 0 auto;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:7}
+.ring .rbg{stroke:var(--surface-2)}
+.ring .rfg{stroke:var(--jade);stroke-linecap:round;transition:stroke-dashoffset .6s cubic-bezier(.4,0,.2,1)}
+.ringwrap{position:relative;flex:0 0 auto}
+.ringwrap b{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:"IBM Plex Mono",monospace;font-size:13px;font-weight:600;color:var(--text);
+}
+.jtext{font-size:13px;color:var(--text-dim);line-height:1.45}
+.jtext b{display:block;font-family:"IBM Plex Mono",monospace;font-size:17px;color:var(--text);font-weight:600}
+/* the timeline: today on the left, the goal and the two age milestones along it */
+.track{position:relative;height:74px;margin:14px 6px 0}
+.tline{position:absolute;left:0;right:0;top:32px;height:8px;border-radius:4px;background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line);overflow:hidden}
+.tfill{
+  height:100%;width:0;border-radius:4px;
+  background:linear-gradient(90deg,var(--jade-soft),var(--jade));
+  transition:width .6s cubic-bezier(.4,0,.2,1);
+}
+.tfill.never{background:repeating-linear-gradient(45deg,var(--warn) 0 6px,transparent 6px 11px);opacity:.55}
+.tm{position:absolute;top:0;bottom:0;width:0;transition:left .6s cubic-bezier(.4,0,.2,1)}
+.tm[hidden]{display:none}
+.tm i{position:absolute;top:29px;left:-7px;width:14px;height:14px;border-radius:50%;background:var(--surface);border:2px solid var(--text-dim)}
+.tm span{
+  position:absolute;white-space:nowrap;font-size:11px;line-height:1.25;color:var(--text-dim);
+  transform:translateX(-50%);
+}
+.tm span b{color:var(--text);font-weight:600}
+.tm.up span{bottom:48px}
+.tm.down span{top:49px}
+.tm.al span{transform:none;left:-6px}
+.tm.ar span{transform:translateX(-100%);left:6px;text-align:right}
+.tm.today i{background:var(--jade-soft);border-color:var(--jade)}
+.tm.goal i{background:var(--jade);border-color:var(--jade);width:18px;height:18px;top:27px;left:-9px;
+  box-shadow:0 0 0 4px color-mix(in srgb,var(--jade) 22%,transparent)}
+.tm.goal span b{color:var(--jade)}
+.tm.goal i{animation:pulse 2.4s ease-in-out infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 8px color-mix(in srgb,var(--jade) 6%,transparent)}}
+.tm.mile i{width:3px;height:16px;border-radius:1px;left:-1.5px;top:28px;border:0;background:var(--brass)}
+/* what the closing balance is made of, as one bar */
+.mixbar{display:flex;height:16px;border-radius:4px;overflow:hidden;background:var(--surface-2);margin-top:4px}
+.mixbar i{display:block;height:100%;width:0;transition:width .6s cubic-bezier(.4,0,.2,1)}
+.mixbar i+i{box-shadow:inset 1px 0 0 var(--surface)}
+.mx-carry{background:var(--jade-soft)}
+.mx-you{background:var(--jade)}
+.mx-er{background:var(--emp)}
+.mx-gov{background:color-mix(in srgb,var(--emp) 55%,var(--surface))}
+.mx-div{background:var(--brass)}
+html[data-theme="kwsp"] .mx-div{background:#C79A3C}
+.mixlegend{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:10px 14px;margin-top:13px}
+.mixlegend div{font-size:11.5px;color:var(--text-dim);line-height:1.35}
+.mixlegend div[hidden]{display:none}
+.mixlegend .sw{margin-right:6px;vertical-align:-1px}
+.mixlegend b{display:block;font-family:"IBM Plex Mono",monospace;font-size:13.5px;color:var(--text);font-weight:600;margin-top:2px}
+.mixlegend em{font-style:normal;color:var(--text-dim);font-family:"IBM Plex Mono",monospace;font-size:11px}
+
+/* a changed number flashes briefly, so the eye finds what moved */
+@keyframes bump{from{background-color:color-mix(in srgb,var(--jade) 20%,var(--surface))}to{background-color:var(--surface)}}
+.stat.bump{animation:bump .9s ease-out}
+@keyframes rise{from{opacity:.35;transform:translateY(5px)}to{opacity:1;transform:none}}
+.bignum.bump{animation:rise .35s ease-out}
+
+/* ---------- live answer dock, phones only ---------- */
+.dock{display:none}
+@media(max-width:899px){
+  .dock{
+    display:flex;position:fixed;left:12px;right:12px;bottom:12px;z-index:70;
+    align-items:center;justify-content:space-between;gap:10px;
+    padding:11px 14px;border-radius:10px;text-decoration:none;
+    background:var(--text);color:var(--surface);
+    box-shadow:0 10px 30px rgba(0,0,0,.25);
+    transform:translateY(calc(100% + 30px));visibility:hidden;
+    transition:transform .28s cubic-bezier(.4,0,.2,1),visibility 0s linear .28s;
+    font-family:"IBM Plex Mono",monospace;font-size:12px;
+  }
+  body.stuck .dock{transform:none;visibility:visible;transition-delay:0s}
+  .dock .dk{opacity:.7;font-size:10px;letter-spacing:.12em;text-transform:uppercase}
+  .dock b{font-family:"Bricolage Grotesque",sans-serif;font-size:17px;font-weight:800;letter-spacing:-.01em}
+  .dock .dr{text-align:right}
+  .wrap{padding-bottom:110px}
+}
+
+/* ---------- toast for applied what-ifs ---------- */
+.toast{
+  position:fixed;left:50%;bottom:22px;z-index:80;transform:translate(-50%,calc(100% + 120px));visibility:hidden;
+  background:var(--text);color:var(--surface);border-radius:8px;padding:10px 12px 10px 16px;
+  display:flex;align-items:center;gap:14px;font-size:13px;box-shadow:0 10px 30px rgba(0,0,0,.25);
+  transition:transform .28s cubic-bezier(.4,0,.2,1),visibility 0s linear .28s;max-width:calc(100vw - 24px);
+}
+.toast.show{transform:translate(-50%,0);visibility:visible;transition-delay:0s}
+.toast button{
+  font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+  background:transparent;color:inherit;border:1px solid currentColor;border-radius:var(--radius);
+  padding:5px 9px;cursor:pointer;opacity:.85;
+}
+.toast button:hover{opacity:1}
+@media(max-width:899px){.toast{bottom:84px}}
 
 /* ---------- controls ---------- */
 .field{margin-bottom:18px}
@@ -384,8 +559,31 @@ html[data-theme="kwsp"] .chip.on{color:#fff}
   position:absolute;left:0;right:0;text-align:center;font-family:"IBM Plex Mono",monospace;
   font-size:9.5px;color:var(--text-dim);opacity:0;transition:opacity .15s ease;pointer-events:none;
 }
-.col:hover .cap,.col .cap.show{opacity:1}
-.targetline{position:absolute;left:56px;right:0;border-top:2px dashed var(--warn);pointer-events:none}
+.col .cap.show{opacity:1}
+.col{cursor:pointer;transition:opacity .15s ease}
+.plot.hovering .col{opacity:.45}
+.plot.hovering .col.active{opacity:1}
+.plot.hovering .col .cap.show{opacity:0}
+.agemark{position:absolute;top:-14px;bottom:0;left:-3px;border-left:1px dashed var(--brass);pointer-events:none}
+.agemark span{
+  position:absolute;top:-4px;left:4px;font-family:"IBM Plex Mono",monospace;font-size:9.5px;
+  color:var(--brass);white-space:nowrap;
+}
+.tip{
+  position:absolute;z-index:5;pointer-events:none;min-width:190px;
+  background:var(--surface);border:1px solid var(--line);border-radius:6px;
+  box-shadow:0 10px 28px rgba(0,0,0,.16);padding:10px 12px;font-size:12px;
+  opacity:0;transform:translateY(4px);transition:opacity .12s ease,transform .12s ease;
+}
+.tip.show{opacity:1;transform:none}
+.tip h5{margin:0 0 6px;font-size:12.5px;font-weight:600;color:var(--text);display:flex;justify-content:space-between;gap:12px}
+.tip h5 span{font-weight:400;color:var(--text-dim);font-family:"IBM Plex Mono",monospace;font-size:11px}
+.tip div{display:flex;justify-content:space-between;gap:16px;color:var(--text-dim);line-height:1.6}
+.tip div b{font-family:"IBM Plex Mono",monospace;font-weight:500;color:var(--text);font-variant-numeric:tabular-nums}
+.tip div.tot{border-top:1px solid var(--line);margin-top:4px;padding-top:4px}
+.tip div.tot b{font-weight:600}
+.tip .sw{margin-right:6px;vertical-align:-1px}
+.targetline{position:absolute;left:56px;right:0;border-top:2px dashed var(--warn);pointer-events:none;transition:bottom .35s cubic-bezier(.4,0,.2,1)}
 .targetline b{
   position:absolute;left:-54px;top:-7px;font-family:"IBM Plex Mono",monospace;
   font-size:9.5px;color:var(--warn);font-weight:600;
@@ -397,8 +595,8 @@ html[data-theme="kwsp"] .chip.on{color:#fff}
 }
 
 /* ---------- stat tiles ---------- */
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--radius);margin-top:20px;overflow:hidden}
-.stat{background:var(--surface);padding:14px 16px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:0;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);margin-top:20px;overflow:hidden}
+.stat{background:var(--surface);padding:14px 16px;box-shadow:1px 0 0 var(--line),0 1px 0 var(--line)}
 .stat .k{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--text-dim)}
 .stat .v{font-family:"IBM Plex Mono",monospace;font-size:19px;font-weight:600;margin-top:5px;font-variant-numeric:tabular-nums}
 .stat .v.j{color:var(--jade)}
@@ -418,6 +616,16 @@ html[data-theme="kwsp"] .chip.on{color:#fff}
 .lever .v{font-family:"IBM Plex Mono",monospace;font-size:15px;font-weight:600;margin-top:5px;color:var(--jade)}
 .lever .v.flat{color:var(--text-dim)}
 .lever .s{font-size:11.5px;color:var(--text-dim);margin-top:4px;line-height:1.4}
+.lever{display:flex;flex-direction:column}
+.lever .try{
+  align-self:flex-start;margin-top:auto;font-family:"IBM Plex Mono",monospace;font-size:10.5px;
+  letter-spacing:.08em;text-transform:uppercase;background:transparent;color:var(--jade);
+  border:1px solid var(--jade);border-radius:var(--radius);padding:4px 9px;cursor:pointer;transition:all .15s ease;
+}
+.lever .s+.try,.lever .v+.try{margin-top:10px}
+.lever .try:hover{background:var(--jade);color:#fff}
+html[data-theme="dark"] .lever .try:hover{color:var(--ink)}
+.lever .try:focus-visible{outline:2px solid var(--jade);outline-offset:2px}
 
 /* ---------- ledger ---------- */
 .ledger{margin-top:34px}
@@ -443,6 +651,14 @@ tbody tr:last-child td{border-bottom:0}
 tbody tr.hit td{background:color-mix(in srgb,var(--jade) 14%,transparent)}
 td.d{color:var(--brass)}
 td.c{color:var(--text-dim)}
+tr.fold td{text-align:center;padding:6px 14px;background:var(--surface-2)}
+tr.fold button{
+  font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.06em;background:transparent;
+  border:0;color:var(--jade);cursor:pointer;padding:4px 8px;text-decoration:underline;text-underline-offset:3px;
+}
+tr.fold button:focus-visible{outline:2px solid var(--jade);outline-offset:2px}
+@keyframes rowflash{from{background:color-mix(in srgb,var(--brass) 30%,transparent)}to{background:transparent}}
+tr.flash td{animation:rowflash 1.6s ease-out}
 
 /* ---------- notes ---------- */
 .eqgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:22px}
@@ -467,7 +683,8 @@ td.c{color:var(--text-dim)}
   margin-top:14px;padding:12px 15px;border-radius:var(--radius);
   border:1px solid var(--warn);color:var(--warn);font-size:13px;
 }
-.notes{margin-top:34px;border-top:1px solid var(--line);padding-top:22px}
+.notes{margin-top:34px}
+.notes .guidebody{padding-top:18px}
 .notes h3{
   font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.16em;
   text-transform:uppercase;color:var(--text-dim);font-weight:500;margin:0 0 12px;
@@ -544,12 +761,12 @@ td.c{color:var(--text-dim)}
 /* Lives in the empty gutter beside the content, so it costs no layout width.
    Only appears when there is genuinely room for it. */
 .rail{display:none}
-/* content is 1120px centred, so its left edge is 50vw - 560px. The rail is 150px
-   wide and needs a 24px gap, which only fits once the viewport passes ~1500px. */
-@media(min-width:1520px){
+/* content is 1280px centred, so its left edge is 50vw - 640px. The rail is 150px
+   wide and needs a 24px gap, which only fits once the viewport passes ~1660px. */
+@media(min-width:1680px){
   .rail{
     display:block;position:fixed;top:50%;transform:translateY(-50%);
-    left:max(16px,calc(50vw - 734px));width:150px;z-index:50;
+    left:max(16px,calc(50vw - 814px));width:150px;z-index:50;
   }
   .rail ol{list-style:none;margin:0;padding:0;border-left:1px solid var(--line)}
   .rail a{
@@ -569,7 +786,7 @@ section[id]{scroll-margin-top:70px}
   *{transition:none !important;animation:none !important}
   html{scroll-behavior:auto}
 }
-@media print{.topbar,.guide,.levers,.chips,.rail{display:none}body{background:#fff}}
+@media print{.topbar,.guide:not(.notes),.levers,.chips,.rail,.tabs,.tabfoot,.dock,.toast,.lever .try{display:none}.tabpanel{display:block!important}.workspace>.side{position:static;max-height:none}body{background:#fff}}
 </style>
 </head>
 <body>
@@ -724,68 +941,61 @@ section[id]{scroll-margin-top:70px}
 </nav>
 
 <div class="wrap">
+ <div class="workspace">
 
-  <section class="answer" id="s-answer" aria-live="polite">
+  <section class="answer" id="s-answer">
     <div class="eyebrow" id="eyebrow">Time to goal</div>
-    <div class="answer-grid">
+    <div class="answer-grid" aria-live="polite">
       <h1 class="bignum" id="headline">&mdash;</h1>
       <p class="answer-note" id="headnote" style="margin:0"></p>
     </div>
-  </section>
-
-  <details class="guide">
-    <summary>How to use this calculator</summary>
-    <div class="guidebody">
-      <div class="steps">
-        <div class="step"><div class="n">1</div><div>
-          <h4>Set your starting point</h4>
-          <p>Enter your <b>current EPF balance</b>, the date you want to count from, and your <b>age today</b>. Age matters: contribution rates change at 60, and it decides whether the goal lands before or after you can withdraw.</p>
-        </div></div>
-        <div class="step"><div class="n">2</div><div>
-          <h4>Pick a goal</h4>
-          <p>Type any amount, or use a chip. The three <b>benchmark</b> chips are EPF's own retirement adequacy targets by age 60: Basic, Adequate and Enhanced.</p>
-        </div></div>
-        <div class="step"><div class="n">3</div><div>
-          <h4>Choose where the money comes from</h4>
-          <p><b>From my salary</b> splits the contribution into your share and your employer's. <b>Fixed amount</b> is for anyone paying in themselves, such as i-Saraan or voluntary contributions, where there is no employer share.</p>
-        </div></div>
-        <div class="step"><div class="n">4</div><div>
-          <h4>Let the statutory rates follow you</h4>
-          <p>Tick <b>Use statutory rates</b> and both percentages follow the schedule for your member type: 11% and 13% up to RM5,000 of wages, 12% above, 2% each for non-Malaysians, and 0% and 4% once you turn 60. The band is re-checked every projected year, so a raise past RM5,000 drops the employer rate on its own.</p>
-        </div></div>
-        <div class="step"><div class="n">5</div><div>
-          <h4>Add a bonus or a top-up</h4>
-          <p>The yearly extra is a single payment, not a monthly one. A <b>bonus</b> counts as wages, so both sides contribute on it. A <b>voluntary top-up</b> is entirely your own money. Pick the month it lands in: January earns almost a full year of dividend, December earns none.</p>
-        </div></div>
-        <div class="step"><div class="n">6</div><div>
-          <h4>Pick a dividend basis</h4>
-          <p><b>Fixed</b> uses one rate you choose. <b>Historical average</b> uses the mean of past declared rates. <b>Trend line</b> fits a line to history. <b>Replay history</b> loops real past rates forward so you can test a bad run.</p>
-        </div></div>
-        <div class="step"><div class="n">7</div><div>
-          <h4>Read the answer</h4>
-          <p>The big number is <b>how long</b> it takes. The tiles give the date, your age then, the split between your money, your employer's and dividends, and what the balance is worth in today's ringgit.</p>
-        </div></div>
-        <div class="step"><div class="n">8</div><div>
-          <h4>Compare and adjust</h4>
-          <p>Every field has a slider. <b>If you changed one thing</b> runs the whole projection four more times, each with a single change, so you can see which one actually buys you the most time and the most money.</p>
-        </div></div>
+    <div class="hv">
+      <div class="hvcard">
+        <div class="hvhead"><span class="hvk">Your journey</span><span class="hvs" id="jsub"></span></div>
+        <div class="jrow">
+          <div class="ringwrap">
+            <svg class="ring" viewBox="0 0 66 66" aria-hidden="true">
+              <circle class="rbg" cx="33" cy="33" r="28"/>
+              <circle class="rfg" id="ringfg" cx="33" cy="33" r="28" stroke-dasharray="175.93" stroke-dashoffset="175.93"/>
+            </svg>
+            <b id="ringpct">0%</b>
+          </div>
+          <div class="jtext"><b id="jsaved">RM0</b><span id="jsavedsub">saved so far</span></div>
+        </div>
+        <div class="track" id="track" aria-hidden="true">
+          <div class="tline"><div class="tfill" id="tfill"></div></div>
+          <div class="tm today down al" id="tm-today"><i></i><span></span></div>
+          <div class="tm mile down" id="tm-55"><i></i><span></span></div>
+          <div class="tm mile down" id="tm-stop"><i></i><span></span></div>
+          <div class="tm goal up" id="tm-goal"><i></i><span></span></div>
+        </div>
       </div>
-
-      <div class="keycol">
-        <span><i class="sw js"></i> Balance carried in</span>
-        <span><i class="sw j"></i> Paid in that year</span>
-        <span><i class="sw b"></i> Dividend that year</span>
-        <span><i class="sw t"></i> Your target</span>
-      </div>
-
-      <div class="watch">
-        <b>Two things to keep in mind.</b> EPF pays its dividend once a year on 31 December, so if the target is crossed by dividend rather than by a contribution, the date will always land on 31 December. And no rate here is a forecast: declared rates are set after the fact and have swung between 4.25% and 6.90% in the last 25 years. Try a few different rates to see the range of possible answers, rather than trusting any single date.
-        <br><br><b>On the contribution figures.</b> EPF officially calculates contributions from the Third Schedule, which uses wage bands and rounds to set amounts rather than applying a clean percentage. Straight percentages are used here, so your actual payslip may differ by a few ringgit a month. Statutory rates also change from time to time; check the current schedule on the KWSP site before relying on the totals.
+      <div class="hvcard">
+        <div class="hvhead"><span class="hvk" id="mixk">What the balance is made of</span><span class="hvs" id="mixsub"></span></div>
+        <div class="mixbar" id="mixbar">
+          <i class="mx-carry"></i><i class="mx-you"></i><i class="mx-er"></i><i class="mx-gov"></i><i class="mx-div"></i>
+        </div>
+        <div class="mixlegend" id="mixlegend">
+          <div><i class="sw mx-carry"></i>Starting balance<b>RM0</b><em></em></div>
+          <div><i class="sw mx-you"></i>You put in<b>RM0</b><em></em></div>
+          <div><i class="sw mx-er"></i>Employer put in<b>RM0</b><em></em></div>
+          <div><i class="sw mx-gov"></i>Government<b>RM0</b><em></em></div>
+          <div><i class="sw mx-div"></i>Dividends<b>RM0</b><em></em></div>
+        </div>
       </div>
     </div>
-  </details>
+  </section>
 
-  <section class="deck" id="s-inputs">
+
+  <aside class="side" id="s-inputs" aria-label="Your details">
+   <div class="tabs" role="tablist" aria-label="Input groups">
+    <button class="tab on" type="button" role="tab" id="tab-goal" aria-controls="tp-goal" aria-selected="true" data-tab="goal"><span class="tk">Goal</span><span class="tv" id="tv-goal">&nbsp;</span></button>
+    <button class="tab" type="button" role="tab" id="tab-pay" aria-controls="tp-pay" aria-selected="false" tabindex="-1" data-tab="pay"><span class="tk">Pay in</span><span class="tv" id="tv-pay">&nbsp;</span></button>
+    <button class="tab" type="button" role="tab" id="tab-div" aria-controls="tp-div" aria-selected="false" tabindex="-1" data-tab="div"><span class="tk">Dividend</span><span class="tv" id="tv-div">&nbsp;</span></button>
+    <button class="tab" type="button" role="tab" id="tab-more" aria-controls="tp-more" aria-selected="false" tabindex="-1" data-tab="more"><span class="tk">More</span><span class="tv" id="tv-more">&nbsp;</span></button>
+   </div>
+   <div class="deck">
+   <div class="tabpanel on" id="tp-goal" role="tabpanel" aria-labelledby="tab-goal">
     <div class="deckcol">
       <h3>Your goal</h3>
       <div class="field">
@@ -842,6 +1052,8 @@ section[id]{scroll-margin-top:70px}
       </div>
     </div>
 
+   </div>
+   <div class="tabpanel" id="tp-pay" role="tabpanel" aria-labelledby="tab-pay">
     <div class="deckcol">
       <h3>What you pay in</h3>
       <div class="field">
@@ -981,6 +1193,8 @@ section[id]{scroll-margin-top:70px}
       </div>
     </div>
 
+   </div>
+   <div class="tabpanel" id="tp-div" role="tabpanel" aria-labelledby="tab-div">
     <div class="deckcol">
       <h3>Dividend rate</h3>
       <div class="field">
@@ -1020,6 +1234,8 @@ section[id]{scroll-margin-top:70px}
       </div>
     </div>
 
+   </div>
+   <div class="tabpanel" id="tp-more" role="tabpanel" aria-labelledby="tab-more">
     <div class="deckcol">
       <h3>Assumptions</h3>
       <div class="field subfield">
@@ -1077,7 +1293,66 @@ section[id]{scroll-margin-top:70px}
         </div>
       </div>
     </div>
-  </section>
+   </div>
+   </div>
+   <div class="tabfoot">
+     <button type="button" id="tabprev" hidden>&larr; Back</button>
+     <button type="button" class="next" id="tabnext">Next: Pay in &rarr;</button>
+   </div>
+  </aside>
+
+  <div class="results">
+  <details class="guide">
+    <summary>How to use this calculator</summary>
+    <div class="guidebody">
+      <div class="steps">
+        <div class="step"><div class="n">1</div><div>
+          <h4>Set your starting point</h4>
+          <p>Enter your <b>current EPF balance</b>, the date you want to count from, and your <b>age today</b>. Age matters: contribution rates change at 60, and it decides whether the goal lands before or after you can withdraw.</p>
+        </div></div>
+        <div class="step"><div class="n">2</div><div>
+          <h4>Pick a goal</h4>
+          <p>Type any amount, or use a chip. The three <b>benchmark</b> chips are EPF's own retirement adequacy targets by age 60: Basic, Adequate and Enhanced.</p>
+        </div></div>
+        <div class="step"><div class="n">3</div><div>
+          <h4>Choose where the money comes from</h4>
+          <p><b>From my salary</b> splits the contribution into your share and your employer's. <b>Fixed amount</b> is for anyone paying in themselves, such as i-Saraan or voluntary contributions, where there is no employer share.</p>
+        </div></div>
+        <div class="step"><div class="n">4</div><div>
+          <h4>Let the statutory rates follow you</h4>
+          <p>Tick <b>Use statutory rates</b> and both percentages follow the schedule for your member type: 11% and 13% up to RM5,000 of wages, 12% above, 2% each for non-Malaysians, and 0% and 4% once you turn 60. The band is re-checked every projected year, so a raise past RM5,000 drops the employer rate on its own.</p>
+        </div></div>
+        <div class="step"><div class="n">5</div><div>
+          <h4>Add a bonus or a top-up</h4>
+          <p>The yearly extra is a single payment, not a monthly one. A <b>bonus</b> counts as wages, so both sides contribute on it. A <b>voluntary top-up</b> is entirely your own money. Pick the month it lands in: January earns almost a full year of dividend, December earns none.</p>
+        </div></div>
+        <div class="step"><div class="n">6</div><div>
+          <h4>Pick a dividend basis</h4>
+          <p><b>Fixed</b> uses one rate you choose. <b>Historical average</b> uses the mean of past declared rates. <b>Trend line</b> fits a line to history. <b>Replay history</b> loops real past rates forward so you can test a bad run.</p>
+        </div></div>
+        <div class="step"><div class="n">7</div><div>
+          <h4>Read the answer</h4>
+          <p>The big number is <b>how long</b> it takes. The tiles give the date, your age then, the split between your money, your employer's and dividends, and what the balance is worth in today's ringgit.</p>
+        </div></div>
+        <div class="step"><div class="n">8</div><div>
+          <h4>Compare and adjust</h4>
+          <p>Every field has a slider. <b>If you changed one thing</b> runs the whole projection four more times, each with a single change, so you can see which one actually buys you the most time and the most money.</p>
+        </div></div>
+      </div>
+
+      <div class="keycol">
+        <span><i class="sw js"></i> Balance carried in</span>
+        <span><i class="sw j"></i> Paid in that year</span>
+        <span><i class="sw b"></i> Dividend that year</span>
+        <span><i class="sw t"></i> Your target</span>
+      </div>
+
+      <div class="watch">
+        <b>Two things to keep in mind.</b> EPF pays its dividend once a year on 31 December, so if the target is crossed by dividend rather than by a contribution, the date will always land on 31 December. And no rate here is a forecast: declared rates are set after the fact and have swung between 4.25% and 6.90% in the last 25 years. Try a few different rates to see the range of possible answers, rather than trusting any single date.
+        <br><br><b>On the contribution figures.</b> EPF officially calculates contributions from the Third Schedule, which uses wage bands and rounds to set amounts rather than applying a clean percentage. Straight percentages are used here, so your actual payslip may differ by a few ringgit a month. Statutory rates also change from time to time; check the current schedule on the KWSP site before relying on the totals.
+      </div>
+    </div>
+  </details>
 
   <section id="s-goesin">
     <p class="blocktitle" style="margin-top:26px">What goes in, at today's figures</p>
@@ -1150,8 +1425,10 @@ section[id]{scroll-margin-top:70px}
     <p style="margin:12px 0 0"><button class="themebtn" id="csvbtn" type="button">Download this table as CSV</button></p>
   </section>
 
-  <section class="notes" id="s-notes">
-    <h3>How this is worked out</h3>
+  <section id="s-notes">
+   <details class="guide notes">
+    <summary>How this is worked out</summary>
+    <div class="guidebody">
 
     <div class="eqgrid">
       <div class="eqcard">
@@ -1217,12 +1494,20 @@ section[id]{scroll-margin-top:70px}
       </div>
     </div>
 
+    </div>
+   </details>
+
     <div class="notewarn" id="warnline" style="display:none"></div>
 
     <p class="foot">This is a planning tool, not financial advice, and it is not affiliated with or endorsed by KWSP. Statutory rates, incentive terms and adequacy benchmarks change; verify anything you intend to act on at <a href="https://www.kwsp.gov.my" target="_blank" rel="noopener" style="color:var(--jade)">kwsp.gov.my</a>. Your inputs are saved in this browser only and are never sent anywhere.</p>
   </section>
 
+  </div>
+ </div>
 </div>
+
+<a class="dock" id="dock" href="#s-answer" aria-label="Back to the answer"></a>
+<div class="toast" id="toast" role="status" aria-live="polite"><span id="toasttxt"></span><button type="button" id="toastundo">Undo</button></div>
 
 <script>
 (function(){
@@ -1853,21 +2138,45 @@ section[id]{scroll-margin-top:70px}
       return out;
     };
   }
+  // a lever can be applied for real, with an undo, when it maps onto a single input
+  var leverApplies = [];
+  $("levers").addEventListener("click", function(e){
+    var b = e.target.closest(".try");
+    if(!b) return;
+    var a = leverApplies[parseInt(b.getAttribute("data-lever"), 10)];
+    if(!a) return;
+    var el = els[a.id], before = el.value;
+    var dp = a.id === "rate" ? 2 : 0;
+    function set(v){
+      el.value = v;
+      pushToSlider(a.id);
+      if(a.id === "rate") syncChips();
+      render();
+    }
+    set((num(el, 0) + a.by).toFixed(dp));
+    toast(a.msg, function(){ set(before); });
+  });
   function renderLevers(base, P, contribFn, rateFn, T, start, sp){
     var lumpM = clamp(parseInt(els.lumpmonth.value, 10) || 12, 1, 12);
     var variants = [
       { k:"Pay RM200 more every month", P:P, rfn:rateFn,
+        apply: contribMode === "fixed" ? { id:"monthly", by:200, msg:"Monthly contribution raised by RM200" } : null,
         cfn:wrapContrib(contribFn, function(c){
           if(!c.stopped){ c.monthly += 200; c.mEmp += 200; } }) },
       { k:"Add RM5,000 once a year", P:P, rfn:rateFn,
+        apply: (contribMode === "fixed" || lumpKind === "topup")
+          ? { id:"lump", by:5000, msg:"Yearly top-up raised by RM5,000" } : null,
         cfn:wrapContrib(contribFn, function(c){
           if(!c.stopped) c.extras = c.extras.concat([{ amt:5000, month:lumpM, emp:5000, er:0, tag:"topup" }]); }) },
       { k:"Earn one point more dividend", P:P, cfn:contribFn,
+        apply: rateMode === "fixed" ? { id:"rate", by:1, msg:"Dividend rate raised by one point" } : null,
         rfn:function(y){ return rateFn(y) + 0.01; } },
-      { k:"Start with RM20,000 more", P:P + 20000, cfn:contribFn, rfn:rateFn }
+      { k:"Start with RM20,000 more", P:P + 20000, cfn:contribFn, rfn:rateFn,
+        apply: { id:"balance", by:20000, msg:"Starting balance raised by RM20,000" } }
     ];
     var html = "";
-    variants.forEach(function(v){
+    leverApplies = [];
+    variants.forEach(function(v, vi){
       var res = null, txt, sub = "", flat = "";
       try { res = project(v.P, v.cfn, v.rfn, T, creditMode, start, sp); } catch(e){ res = null; }
 
@@ -1889,7 +2198,9 @@ section[id]{scroll-margin-top:70px}
         } catch(e){ sub = ""; }
       }
       html += '<div class="lever"><div class="k">' + v.k + '</div><div class="v' + flat + '">' + txt + '</div>' +
-              (sub ? '<div class="s">' + sub + '</div>' : "") + '</div>';
+              (sub ? '<div class="s">' + sub + '</div>' : "") +
+              (v.apply && !flat ? '<button class="try" type="button" data-lever="' + vi + '">Try it</button>' : "") + '</div>';
+      leverApplies[vi] = v.apply;
     });
     $("levers").innerHTML = html;
 
@@ -1900,6 +2211,279 @@ section[id]{scroll-margin-top:70px}
         fmtDate(base.reachedDate, precision) + "</b> if you carried on to that same date instead. " +
         "A change can show the same finish date and still be worth making: EPF credits its dividend only once a year, " +
         "so unless the gain is enough to cross a whole year earlier, the date stays put while the balance grows.";
+  }
+
+  // ---- changed values flash, so the eye finds what moved ----
+  var painted = false;           // nothing flashes on the very first render
+  function bump(el){
+    if(!painted || !el) return;
+    el.classList.remove("bump");
+    void el.offsetWidth;         // restart the animation
+    el.classList.add("bump");
+  }
+  function sv(id, text){
+    var el = $(id);
+    if(el.textContent === text) return;
+    el.textContent = text;
+    bump(el.closest(".stat"));
+  }
+  function tidyM(n){
+    if(n >= 1000000) return "RM" + (n / 1000000).toFixed(2).replace(/\.?0+$/, "") + "m";
+    return rmShort(n);
+  }
+
+  // ---- hero: progress ring, timeline and what the balance is made of ----
+  var RING = 175.93;             // 2 * pi * r, r = 28
+  function renderHero(res, P, T, age0){
+    var reachedOK = res.reached !== null;
+    var frac = clamp(P / T, 0, 1);
+    $("ringfg").style.strokeDashoffset = (RING * (1 - frac)).toFixed(2);
+    $("ringfg").style.opacity = frac > 0.005 ? "1" : "0";   // a round cap would draw a dot at 0%
+    // floored, so 99.6% never reads as a goal already met
+    $("ringpct").textContent = Math.floor(frac * 100) + "%";
+    $("jsaved").textContent = rm(P);
+    $("jsavedsub").textContent = "saved so far, of your " + rm(T) + " goal";
+
+    var stopAge = clamp(num(els.retire, 60), 0, 120);
+    var goalAge = reachedOK ? age0 + res.reached / 12 : null;
+    var end = Math.max(age0 + 1, ACCESS_AGE, stopAge, goalAge || 0);
+    if(!reachedOK) end = Math.max(end, age0 + 20);
+    var pos = function(a){ return clamp((a - age0) / (end - age0) * 100, 0, 100); };
+    function place(id, a, html, show, up){
+      var m = $(id);
+      m.hidden = !show;
+      if(!show) return;
+      var x = pos(a);
+      m.style.left = x + "%";
+      if(up !== undefined){ m.classList.toggle("up", up); m.classList.toggle("down", !up); }
+      m.classList.toggle("al", x < 12);
+      m.classList.toggle("ar", x > 88);
+      m.querySelector("span").innerHTML = html;
+    }
+    place("tm-today", age0, "<b>Today</b><br>age " + Math.floor(age0), true);
+    place("tm-goal", goalAge, reachedOK && res.reached > 0
+      ? "<b>" + fmtDate(res.reachedDate, "month") + "</b><br>age " + Math.floor(goalAge) : "",
+      reachedOK && res.reached > 0);
+    // labels need roughly a quarter of the track each; anything closer to its
+    // neighbour flips above the line, or keeps only its tick if that side is taken too
+    var p55 = pos(ACCESS_AGE), pStop = pos(stopAge), pGoal = reachedOK ? pos(goalAge) : -100;
+    var show55 = age0 < ACCESS_AGE && p55 > 15;
+    var showStop = stopAge > age0 && pStop > 15 && Math.abs(stopAge - ACCESS_AGE) >= 1;
+    var stopUp = false, stopText = "<b>" + Math.round(stopAge) + "</b><br>stop paying in";
+    if(show55 && showStop && Math.abs(pStop - p55) < 26){
+      if(Math.abs(pStop - pGoal) >= 26) stopUp = true; else stopText = "";
+    }
+    var text55 = (Math.abs(p55 - pGoal) < 2) ? "" : "<b>55</b><br>full withdrawal";
+    place("tm-55", ACCESS_AGE, text55, show55);
+    place("tm-stop", stopAge, stopText, showStop, stopUp);
+    var fill = $("tfill");
+    fill.classList.toggle("never", !reachedOK);
+    fill.style.width = (reachedOK ? pos(goalAge) : 100) + "%";
+    $("jsub").textContent = !reachedOK ? "Not reached within " + MAX_YEARS + " years"
+      : res.reached === 0 ? "Already there" : dur(res.reached) + " to go";
+
+    var total = reachedOK ? (res.reached === 0 ? P : res.reachedBal)
+              : (res.rows.length ? res.rows[res.rows.length - 1].closing : P);
+    var parts = [P, res.totalEmp, res.totalEr, res.totalIncentive, res.totalDiv];
+    var bars = $("mixbar").children, legs = $("mixlegend").children;
+    parts.forEach(function(v, i){
+      var w = total > 0 ? v / total * 100 : 0;
+      bars[i].style.width = w + "%";
+      // employer and government only appear when they actually put something in
+      legs[i].hidden = (i === 2 || i === 3) && v <= 0;
+      legs[i].querySelector("b").textContent = rm(v);
+      legs[i].querySelector("em").textContent = Math.round(w) + "%";
+    });
+    $("mixk").textContent = "What the " + tidyM(total) + " is made of";
+    $("mixsub").textContent = !reachedOK ? "after " + MAX_YEARS + " years"
+      : res.reached === 0 ? "today" : "by " + fmtDate(res.reachedDate, "month");
+  }
+
+  // ---- projection chart ----
+  // Columns are kept between renders rather than rebuilt, so dragging a slider
+  // animates the bars from where they were to where they now are.
+  var chartRows = [], chartAge0 = 0, chartPeak = 1;
+  var tip = document.createElement("div");
+  tip.className = "tip";
+  tip.setAttribute("aria-hidden", "true");
+  els.plot.appendChild(tip);
+
+  function renderChart(rows, T, age0){
+    var plot = els.plot;
+    chartRows = rows; chartAge0 = age0;
+    hideTip();
+    Array.prototype.slice.call(plot.querySelectorAll(".gline,.empty")).forEach(function(n){ n.parentNode.removeChild(n); });
+    var cols = Array.prototype.slice.call(plot.querySelectorAll(".col"));
+    var line = plot.querySelector(".targetline");
+    els.xaxis.innerHTML = "";
+    if(!rows.length){
+      cols.forEach(function(c){ plot.removeChild(c); });
+      if(line) plot.removeChild(line);
+      plot.insertAdjacentHTML("beforeend", '<div class="empty" style="color:var(--text-dim);font-size:13px;align-self:center;width:100%;text-align:center">Nothing to project.</div>');
+      return;
+    }
+    var peak = chartPeak = Math.max(T, rows[rows.length - 1].closing) * 1.06;
+    var showEvery = rows.length > 18 ? Math.ceil(rows.length / 14) : 1;
+
+    // reference lines at round amounts, skipping any that would sit on the target line
+    var step = niceStep(peak, 4), tFrac = T / peak;
+    if(step > 0){
+      for(var gv = step; gv < peak; gv += step){
+        var frac = gv / peak;
+        if(Math.abs(frac - tFrac) < 0.04) continue;
+        var gl = document.createElement("div");
+        gl.className = "gline";
+        gl.style.bottom = (frac * 100) + "%";
+        gl.innerHTML = "<b>" + rmShort(gv) + "</b>";
+        plot.appendChild(gl);
+      }
+    }
+
+    while(cols.length > rows.length) plot.removeChild(cols.pop());
+    while(cols.length < rows.length){
+      var col = document.createElement("div");
+      col.className = "col";
+      // three bands: what was carried in, what was paid in, what the dividend added
+      col.innerHTML = '<div class="cap"></div><div class="stack">' +
+        '<div class="seg div"></div><div class="seg base"></div><div class="seg carry"></div></div>';
+      plot.appendChild(col);
+      cols.push(col);
+    }
+    void plot.offsetHeight;      // new columns start at zero height and grow
+
+    rows.forEach(function(r, idx){
+      var col = cols[idx];
+      col.setAttribute("data-i", idx);
+      col.setAttribute("aria-label", r.label + ", closing " + rm(r.closing));
+      var cap = col.firstChild;
+      cap.className = "cap" + (idx === rows.length - 1 ? " show" : "");
+      cap.style.bottom = "calc(" + (r.closing / peak * 100) + "% + 4px)";
+      cap.textContent = rmShort(r.closing);
+      var segs = col.querySelectorAll(".seg");
+      segs[0].style.height = (r.dividend / peak * 100) + "%";
+      segs[1].style.height = (r.contrib / peak * 100) + "%";
+      segs[2].style.height = (r.opening / peak * 100) + "%";
+      var mark = col.querySelector(".agemark");
+      if(mark) col.removeChild(mark);
+      if(idx > 0 && age0 + idx === ACCESS_AGE){
+        col.insertAdjacentHTML("beforeend", '<div class="agemark"><span>age 55</span></div>');
+      }
+      var x = document.createElement("div");
+      x.textContent = (idx % showEvery === 0) ? ("'" + String(r.year).slice(2)) : "";
+      els.xaxis.appendChild(x);
+    });
+
+    if(!line){
+      line = document.createElement("div");
+      line.className = "targetline";
+      plot.appendChild(line);
+    }
+    line.style.bottom = clamp(T / peak * 100, 0, 100) + "%";
+    line.innerHTML = "<b>" + rmShort(T) + "</b>";
+  }
+
+  function tipLine(label, v, sw, cls){
+    return '<div' + (cls ? ' class="' + cls + '"' : "") + '><span>' +
+           (sw ? '<i class="sw ' + sw + '"></i>' : "") + label + '</span><b>' + rm(v) + '</b></div>';
+  }
+  function showTip(col){
+    var i = parseInt(col.getAttribute("data-i"), 10), r = chartRows[i];
+    if(!r) return;
+    var plot = els.plot;
+    Array.prototype.slice.call(plot.querySelectorAll(".col")).forEach(function(c){ c.classList.toggle("active", c === col); });
+    plot.classList.add("hovering");
+    tip.innerHTML = '<h5>' + esc(r.label) + '<span>age ' + (chartAge0 + i) + '</span></h5>' +
+      tipLine("Carried in", r.opening, "js") +
+      tipLine("Paid in", r.contrib, "j") +
+      tipLine("&nbsp;&nbsp;&nbsp;from you", r.emp) +
+      (r.er > 0 ? tipLine("&nbsp;&nbsp;&nbsp;from employer", r.er) : "") +
+      (r.incentive > 0 ? tipLine("&nbsp;&nbsp;&nbsp;government", r.incentive) : "") +
+      tipLine("Dividend at " + (r.rate * 100).toFixed(2) + "%", r.dividend, "b") +
+      tipLine("Closing balance", r.closing, "", "tot");
+    tip.classList.add("show");
+    // beside the column rather than above it, so a tall bar never pushes it off the chart
+    var pw = plot.clientWidth, tw = tip.offsetWidth;
+    var cx = col.offsetLeft + col.offsetWidth / 2;
+    var left = cx > pw / 2 ? col.offsetLeft - tw - 10 : col.offsetLeft + col.offsetWidth + 10;
+    tip.style.left = clamp(left, 0, Math.max(0, pw - tw)) + "px";
+    tip.style.top = "0px";
+  }
+  function hideTip(){
+    tip.classList.remove("show");
+    els.plot.classList.remove("hovering");
+    Array.prototype.slice.call(els.plot.querySelectorAll(".col.active")).forEach(function(c){ c.classList.remove("active"); });
+  }
+  els.plot.addEventListener("mouseover", function(e){
+    var c = e.target.closest(".col"); if(c) showTip(c);
+  });
+  els.plot.addEventListener("click", function(e){
+    var c = e.target.closest(".col"); if(c) showTip(c);
+  });
+  els.plot.addEventListener("mouseleave", hideTip);
+  // a tap anywhere else puts the tooltip away on touch screens
+  document.addEventListener("click", function(e){ if(!els.plot.contains(e.target)) hideTip(); });
+
+  // ---- year by year table, folded in the middle when long ----
+  var ledgerOpen = false;
+  function renderLedger(rows, age0, reachedOK){
+    els.tbody.innerHTML = "";
+    var n = rows.length, HEAD = 5, TAIL = 3;
+    var fold = !ledgerOpen && n > HEAD + TAIL + 2;
+    rows.forEach(function(r, idx){
+      if(fold && idx === HEAD){
+        els.tbody.insertAdjacentHTML("beforeend", '<tr class="fold"><td colspan="9"><button type="button">Show the ' +
+          (n - HEAD - TAIL) + ' years in between</button></td></tr>');
+      }
+      if(fold && idx >= HEAD && idx < n - TAIL) return;
+      var gt = r.contrib + r.dividend;
+      var share = gt > 0 ? (r.dividend / gt * 100) : 0;
+      var tr = document.createElement("tr");
+      if(idx === n - 1 && reachedOK) tr.className = "hit";
+      tr.innerHTML =
+        "<td>" + r.label + "</td>" +
+        "<td class='c'>" + (age0 + idx) + "</td>" +
+        "<td class='d'>" + (r.rate * 100).toFixed(2) + "%</td>" +
+        "<td class='c'>" + rm(r.opening) + "</td>" +
+        "<td class='c'>" + rm(r.emp) + "</td>" +
+        "<td class='c'>" + rm(r.er) + "</td>" +
+        "<td class='d'>" + rm(r.dividend) + "</td>" +
+        "<td>" + rm(r.closing) + "</td>" +
+        "<td class='c'>" + share.toFixed(0) + "%</td>";
+      els.tbody.appendChild(tr);
+    });
+    if(ledgerOpen && n > HEAD + TAIL + 2){
+      els.tbody.insertAdjacentHTML("beforeend", '<tr class="fold"><td colspan="9"><button type="button">Show fewer years</button></td></tr>');
+    }
+  }
+  els.tbody.addEventListener("click", function(e){
+    if(!e.target.closest("tr.fold button")) return;
+    ledgerOpen = !ledgerOpen;
+    render();
+  });
+
+  // ---- toast with undo, for what-ifs applied from the levers ----
+  var toastTimer = null, toastUndo = null;
+  function toast(text, undo){
+    $("toasttxt").textContent = text;
+    toastUndo = undo;
+    $("toast").classList.add("show");
+    if(toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(hideToast, 6000);
+  }
+  function hideToast(){ $("toast").classList.remove("show"); toastUndo = null; }
+  $("toastundo").addEventListener("click", function(){
+    if(toastUndo) toastUndo();
+    hideToast();
+  });
+
+  // each tab carries a one-line summary of what is set inside it
+  function renderTabValues(contribFn, rateFn, T, age0){
+    var c = contribFn(0);
+    $("tv-goal").textContent = tidyM(T) + " \u00b7 age " + Math.floor(age0);
+    $("tv-pay").textContent = c.stopped ? "Nothing" : rm(c.monthly) + "/mo";
+    $("tv-div").textContent = (rateFn(LAST_ACTUAL + 1) * 100).toFixed(2) + "% " +
+      { fixed:"fixed", avg:"average", trend:"trend", replay:"replay" }[rateMode];
+    $("tv-more").textContent = "Pay in to " + Math.round(clamp(num(els.retire, 60), 0, 120));
   }
 
   // ---- main render ----
@@ -1943,21 +2527,18 @@ section[id]{scroll-margin-top:70px}
       if(yy) h += yy + (yy === 1 ? " year " : " years ");
       if(mm) h += "<em>" + mm + (mm === 1 ? " month" : " months") + "</em>";
       if(!mm) h = "<em>" + yy + (yy === 1 ? " year" : " years") + "</em>";
-      els.headline.innerHTML = h.trim();
+      if(els.headline.innerHTML !== h.trim()){ els.headline.innerHTML = h.trim(); bump(els.headline); }
 
       var onDividend = creditMode === "epf" &&
                        res.reachedDate.getMonth() === 11 && res.reachedDate.getDate() === 31;
       var ageThen = age0 + Math.floor(mo / 12);
+      var added = res.totalDiv + res.totalContrib;
       els.headnote.innerHTML =
-        "Counting from <b>" + fmtDate(start, "exact") + "</b>, the balance crosses <b>" + rm(T) +
-        "</b> on <b>" + fmtDate(res.reachedDate, precision) + "</b>" +
-        (onDividend ? " when that year's dividend is credited" : " on a contribution") +
-        ", landing at <b>" + rm(res.reachedBal) + "</b> when you are <b>" + ageThen +
-        "</b>. Of the <b>" + rm(res.reachedBal - P) + "</b> added along the way, <b>" +
-        rm(res.totalDiv) + "</b> is dividend and <b>" + rm(res.totalContrib) + "</b> is contributions" +
-        (res.totalEr > 0 ? " (" + rm(res.totalEmp) + " from you, " + rm(res.totalEr) + " from your employer)." : ".") +
-        (res.totalIncentive > 0
-          ? " That includes <b>" + rm(res.totalIncentive) + "</b> of government matching, which is neither yours nor an employer's." : "") +
+        "Counting from <b>" + fmtDate(start, "exact") + "</b>, you reach <b>" + rm(T) +
+        "</b> in <b>" + fmtDate(res.reachedDate, precision) + "</b>" +
+        (onDividend ? ", when that year's dividend is credited," : "") +
+        " at age <b>" + ageThen + "</b>. Dividends supply <b>" +
+        (added > 0 ? Math.round(res.totalDiv / added * 100) : 0) + "%</b> of everything added along the way." +
         (function(){
           var nd = noDividendMonths(P, contribFn, T, start);
           if(nd === Infinity) return " The same payments alone would never get there.";
@@ -1975,20 +2556,20 @@ section[id]{scroll-margin-top:70px}
     var real  = reachedOK ? (res.reached === 0 ? P : res.reachedBal) / Math.pow(1 + infl, years) : 0;
     var ageThen2 = age0 + (reachedOK ? Math.floor(res.reached / 12) : 0);
 
-    $("s-date").textContent = reachedOK ? fmtDate(res.reached === 0 ? start : res.reachedDate, precision) : "Never";
+    sv("s-date", reachedOK ? fmtDate(res.reached === 0 ? start : res.reachedDate, precision) : "Never");
     $("s-datesub").textContent = reachedOK ? dur(res.reached) : "within " + MAX_YEARS + " years";
-    $("s-age").textContent = reachedOK ? String(ageThen2) : "—";
+    sv("s-age", reachedOK ? String(ageThen2) : "—");
     $("s-agesub").textContent = reachedOK
       ? (ageThen2 >= ACCESS_AGE ? "withdrawable in full" : (ACCESS_AGE - ageThen2) + " years before 55")
       : "";
     var endBal = res.rows.length ? res.rows[res.rows.length - 1].closing : P;
-    $("s-final").textContent = rm(reachedOK ? (res.reached === 0 ? P : res.reachedBal) : endBal);
+    sv("s-final", rm(reachedOK ? (res.reached === 0 ? P : res.reachedBal) : endBal));
     $("s-realsub").textContent = reachedOK
       ? rm(real) + " in today's money at " + (infl * 100).toFixed(1) + "% inflation"
       : "as far as " + MAX_YEARS + " years gets you";
-    $("s-contrib").textContent = rm(res.totalEmp);
-    $("s-employer").textContent = rm(res.totalEr);
-    $("s-div").textContent = rm(res.totalDiv);
+    sv("s-contrib", rm(res.totalEmp));
+    sv("s-employer", rm(res.totalEr));
+    sv("s-div", rm(res.totalDiv));
     $("inctile").hidden = !(res.totalIncentive > 0);
     $("s-incentive").textContent = rm(res.totalIncentive);
     var growthTotal = res.totalContrib + res.totalDiv;
@@ -2007,6 +2588,14 @@ section[id]{scroll-margin-top:70px}
         "<span><b>" + fmtDate(res.reachedDate, precision) + "</b></span>";
     }
 
+    var dk = '<span class="dk">' + (goal ? "Time to " + gname : "Time to goal") + '</span>';
+    $("dock").innerHTML = res.reached === 0
+      ? '<span>' + dk + '<br><b>Already there</b></span>'
+      : res.capped
+      ? '<span>' + dk + '<br><b>Out of reach</b></span><span class="dr"><span class="dk">Within</span><br><b>' + MAX_YEARS + ' yrs</b></span>'
+      : '<span>' + dk + '<br><b>' + dur(res.reached) + '</b></span><span class="dr"><span class="dk">Reached</span><br><b>' +
+        fmtDate(res.reachedDate, "month") + '</b></span>';
+
     // account split tiles
     var accTot = res.acc[0] + res.acc[1] + res.acc[2];
     $("accstats").innerHTML = res.acc.map(function(v, i){
@@ -2020,93 +2609,12 @@ section[id]{scroll-margin-top:70px}
 
     renderLevers(res, P, contribFn, rateFn, T, start, sp);
 
-    // chart
-    els.plot.innerHTML = "";
-    els.xaxis.innerHTML = "";
-    var rows = res.rows;
-    if(!rows.length){
-      els.plot.innerHTML = '<div style="color:var(--text-dim);font-size:13px;align-self:center;width:100%;text-align:center">Nothing to project.</div>';
-    } else {
-      var peak = Math.max(T, rows[rows.length - 1].closing) * 1.06;
-      var showEvery = rows.length > 18 ? Math.ceil(rows.length / 14) : 1;
+    renderHero(res, P, T, age0);
+    renderChart(res.rows, T, age0);
+    renderLedger(res.rows, age0, reachedOK);
+    renderTabValues(contribFn, rateFn, T, age0);
 
-      // reference lines at round amounts, skipping any that would sit on the target line
-      var step = niceStep(peak, 4), tFrac = T / peak;
-      if(step > 0){
-        for(var gv = step; gv < peak; gv += step){
-          var frac = gv / peak;
-          if(Math.abs(frac - tFrac) < 0.04) continue;
-          var gl = document.createElement("div");
-          gl.className = "gline";
-          gl.style.bottom = (frac * 100) + "%";
-          gl.innerHTML = "<b>" + rmShort(gv) + "</b>";
-          els.plot.appendChild(gl);
-        }
-      }
-
-      rows.forEach(function(r, idx){
-        var col = document.createElement("div");
-        col.className = "col";
-        col.title = r.label +
-          "\nOpening " + rm(r.opening) +
-          "\nYou " + rm(r.emp) + "   Employer " + rm(r.er) +
-          (r.incentive > 0 ? "\nGovernment matching " + rm(r.incentive) : "") +
-          "\nDividend " + rm(r.dividend) +
-          "\nClosing " + rm(r.closing);
-
-        var cap = document.createElement("div");
-        cap.className = "cap" + (idx === rows.length - 1 ? " show" : "");
-        cap.style.bottom = "calc(" + (r.closing / peak * 100) + "% + 4px)";
-        cap.textContent = rmShort(r.closing);
-        col.appendChild(cap);
-
-        // three bands: what was carried in, what was paid in, what the dividend added
-        var stack = document.createElement("div");
-        stack.className = "stack";
-        var dv = document.createElement("div");
-        dv.className = "seg div";
-        dv.style.height = (r.dividend / peak * 100) + "%";
-        var bs = document.createElement("div");
-        bs.className = "seg base";
-        bs.style.height = (r.contrib / peak * 100) + "%";
-        var cy = document.createElement("div");
-        cy.className = "seg carry";
-        cy.style.height = (r.opening / peak * 100) + "%";
-        stack.appendChild(dv); stack.appendChild(bs); stack.appendChild(cy);
-        col.appendChild(stack);
-        els.plot.appendChild(col);
-
-        var x = document.createElement("div");
-        x.textContent = (idx % showEvery === 0) ? ("'" + String(r.year).slice(2)) : "";
-        els.xaxis.appendChild(x);
-      });
-      var line = document.createElement("div");
-      line.className = "targetline";
-      line.style.bottom = clamp(T / peak * 100, 0, 100) + "%";
-      line.innerHTML = "<b>" + rmShort(T) + "</b>";
-      els.plot.appendChild(line);
-    }
-
-    // ledger
-    els.tbody.innerHTML = "";
-    rows.forEach(function(r, idx){
-      var gt = r.contrib + r.dividend;
-      var share = gt > 0 ? (r.dividend / gt * 100) : 0;
-      var tr = document.createElement("tr");
-      if(idx === rows.length - 1 && reachedOK) tr.className = "hit";
-      tr.innerHTML =
-        "<td>" + r.label + "</td>" +
-        "<td class='c'>" + (age0 + idx) + "</td>" +
-        "<td class='d'>" + (r.rate * 100).toFixed(2) + "%</td>" +
-        "<td class='c'>" + rm(r.opening) + "</td>" +
-        "<td class='c'>" + rm(r.emp) + "</td>" +
-        "<td class='c'>" + rm(r.er) + "</td>" +
-        "<td class='d'>" + rm(r.dividend) + "</td>" +
-        "<td>" + rm(r.closing) + "</td>" +
-        "<td class='c'>" + share.toFixed(0) + "%</td>";
-      els.tbody.appendChild(tr);
-    });
-
+    painted = true;
     saveState();
   }
   // ---- sliders paired with number boxes ----
@@ -2434,6 +2942,45 @@ section[id]{scroll-margin-top:70px}
   })();
   $("setupbtn").addEventListener("click", setup.open);
 
+  // ---- input tabs ----
+  var TAB_ORDER = ["goal", "pay", "div", "more"];
+  var TAB_NAMES = { goal:"Goal", pay:"Pay in", div:"Dividend", more:"More settings" };
+  function showTab(name, focus){
+    TAB_ORDER.forEach(function(t){
+      var b = $("tab-" + t), on = t === name;
+      b.classList.toggle("on", on);
+      b.setAttribute("aria-selected", String(on));
+      b.tabIndex = on ? 0 : -1;
+      $("tp-" + t).classList.toggle("on", on);
+    });
+    var i = TAB_ORDER.indexOf(name);
+    $("tabprev").hidden = i === 0;
+    $("tabnext").hidden = i === TAB_ORDER.length - 1;
+    if(i > 0) $("tabprev").innerHTML = "&larr; " + esc(TAB_NAMES[TAB_ORDER[i - 1]]);
+    if(i < TAB_ORDER.length - 1) $("tabnext").innerHTML = "Next: " + esc(TAB_NAMES[TAB_ORDER[i + 1]]) + " &rarr;";
+    document.querySelector(".side .deck").scrollTop = 0;
+    if(focus) $("tab-" + name).focus();
+  }
+  function curTab(){ return document.querySelector(".tab.on").getAttribute("data-tab"); }
+  function stepTab(d){
+    var i = TAB_ORDER.indexOf(curTab()) + d;
+    if(i < 0 || i >= TAB_ORDER.length) return;
+    showTab(TAB_ORDER[i]);
+    // on a phone the panel top may be above the screen; bring it back into view
+    var side = $("s-inputs");
+    if(side.getBoundingClientRect().top < 0) side.scrollIntoView({ block:"start" });
+  }
+  Array.prototype.slice.call(document.querySelectorAll(".tab")).forEach(function(b){
+    b.addEventListener("click", function(){ showTab(b.getAttribute("data-tab")); });
+    b.addEventListener("keydown", function(e){
+      var i = TAB_ORDER.indexOf(b.getAttribute("data-tab")), n = TAB_ORDER.length;
+      if(e.key === "ArrowRight"){ e.preventDefault(); showTab(TAB_ORDER[(i + 1) % n], true); }
+      else if(e.key === "ArrowLeft"){ e.preventDefault(); showTab(TAB_ORDER[(i + n - 1) % n], true); }
+    });
+  });
+  $("tabprev").addEventListener("click", function(){ stepTab(-1); });
+  $("tabnext").addEventListener("click", function(){ stepTab(1); });
+
   // ---- section rail highlights whichever section you are reading ----
   (function(){
     var links = Array.prototype.slice.call(document.querySelectorAll(".rail a"));
@@ -2472,6 +3019,7 @@ section[id]{scroll-margin-top:70px}
     if(!("IntersectionObserver" in window) || !anchor) return;
     new IntersectionObserver(function(entries){
       bar.classList.toggle("stuck", !entries[0].isIntersecting);
+      document.body.classList.toggle("stuck", !entries[0].isIntersecting);
     }, { threshold: 0 }).observe(anchor);
   })();
 

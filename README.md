@@ -30,8 +30,17 @@ A single page calculator that estimates when your Malaysian EPF savings will rea
 - Replay the actual declared rates year by year
 - Konvensional and Shariah rate sets
 
+**Layout**
+- Inputs grouped into four tabs (Goal, Pay in, Dividend, More), each showing a one line summary of what is set inside it
+- On wide screens the inputs stay pinned beside the results, so every change is visible as you make it
+- On phones a docked bar keeps the answer in view while you scroll through the inputs
+
 **Output**
 - Headline answer in years, or as a target date or age
+- Progress ring for how much of the goal is already saved, and a timeline from today to the goal with the age 55 and stop-contributing milestones
+- One bar showing what the final balance is made of: starting balance, your money, your employer's, government matching and dividends
+- Animated projection chart with a hover or tap breakdown for each year, and the age 55 year marked
+- What-if levers with a Try it button that applies the change, with undo
 - Inflation adjustment to show the result in today's money
 - Contribution stop age
 - Split across Akaun Persaraan, Akaun Sejahtera and Akaun Fleksibel
