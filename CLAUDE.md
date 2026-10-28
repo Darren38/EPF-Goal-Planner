@@ -8,6 +8,16 @@ A single-file web app (`index.html`, plus `sw.js`), published by GitHub Pages st
 - Commits are authored by Darren38 only, with no co-author or session lines, so Darren38 stays the only contributor.
 - Commit messages and the README are written in plain, friendly words for people who are not developers.
 
+## Search engines (the same way as Tech Comparison Hub)
+
+- `index.html` carries a description (under 160 characters), the canonical address, share-preview tags and a
+  schema.org summary. Keep them true when the planner changes.
+- `sitemap.xml` lists the page. GitHub Pages serves a project site under `/EPF-Goal-Planner/`, so a `robots.txt` here
+  would never be read (only one at darren38.github.io itself counts); there is none on purpose.
+- IndexNow (Bing, Yandex and others): `.github/workflows/indexnow.yml` runs `tools/indexnow.py submit` after a push to
+  `main` that changes the page. It waits until the new version is live, then sends the address. The key in
+  `indexnow.txt` is public by design. Never let it fail a run.
+
 ## Lessons from bugs found here
 
 These came out of a full check on phones (320–430px), tablets and laptops (up to 1920px). Check for each of them

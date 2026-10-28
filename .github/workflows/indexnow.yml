@@ -1,0 +1,29 @@
+# Tells Bing and other search engines (IndexNow) that the planner changed, after each change to the page reaches main.
+# GitHub Pages publishes main by itself; tools/indexnow.py waits until the new version is live before sending.
+# It only reads the site and sends one address, and it never fails: telling search engines is a courtesy.
+name: Tell search engines
+
+on:
+  push:
+    branches: [main]
+    paths: [index.html, sitemap.xml, indexnow.txt]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: indexnow
+  cancel-in-progress: true
+
+jobs:
+  indexnow:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Tell search engines the page changed (IndexNow; Bing, Yandex and others)
+        run: python3 tools/indexnow.py submit
