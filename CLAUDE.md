@@ -32,6 +32,23 @@ before calling a change finished, here or in any similar page.
    while the dialog is open.
 9. **Browsers keep GitHub Pages files for about ten minutes**, so visitors saw the old version after an update.
    `sw.js` makes every visit check for newer files.
+10. **Saved settings can be old or damaged.** A mode name the page doesn't know left it half in one mode and half in
+    another. `loadState` accepts only the real choices for each setting.
+
+### Lessons from GSO Grid Archive (the owner's other site), worth checking here too
+
+11. **A stacked chart counts a missing lower value as zero** and draws everything above it too low. Stack only values
+    taken at the same moment, and make a moment with any missing value a gap for every layer.
+12. **A row of buttons that doesn't wrap widens the page on a 320 px phone.** Button groups need `flex-wrap: wrap`.
+13. **`pkill -f <pattern>` can kill the shell that runs it**, because the pattern is in its own command line. Stop test
+    servers by their process number instead.
+14. **A service worker makes its own requests**, so Playwright's `page.route()` can't fake them. Tests that fake
+    failures or slow answers open their context with `serviceWorkers: "block"`.
+15. **Where an official site has the same chart, draw ours the way it does**; charts this site works out itself stay
+    as they are.
+
+The same lessons are kept in GSO Grid Archive's `CLAUDE.md`. When a new lesson turns up in either project, add it to
+both.
 
 ## How to check a change
 

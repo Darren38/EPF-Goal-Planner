@@ -2785,14 +2785,17 @@ section[id]{scroll-margin-top:70px}
         els.isaraan.checked = !!o.ticks.isaraan;
       }
       var m = o.modes || {};
-      if(m.precision)   { precision = m.precision;     setSeg("precision", "data-p", precision); }
-      if(m.contribMode) { contribMode = m.contribMode; setSeg("contribsrc", "data-c", contribMode); }
-      if(m.creditMode)  { creditMode = m.creditMode;   setSeg("creditmode", "data-cm", creditMode); }
-      if(m.lumpKind)    { lumpKind = m.lumpKind;       setSeg("lumpkind", "data-l", lumpKind); }
-      if(m.rateMode)    { rateMode = m.rateMode;       setSeg("ratemodes", "data-m", rateMode); }
-      if(m.portfolio)   { portfolio = m.portfolio;     setSeg("portfolio", "data-f", portfolio); }
-      if(m.nationality) { nationality = m.nationality; setSeg("nationality", "data-n", nationality); }
-      if(typeof m.windowN === "number"){ windowN = m.windowN; setSeg("window", "data-w", windowN); }
+      // saved values are only taken when they are one of the real choices: an old or damaged
+      // value would otherwise leave the page half in one mode and half in another
+      var ok = function(v, list){ return list.indexOf(v) >= 0; };
+      if(ok(m.precision, ["exact","month","year"]))     { precision = m.precision;     setSeg("precision", "data-p", precision); }
+      if(ok(m.contribMode, ["salary","fixed"]))         { contribMode = m.contribMode; setSeg("contribsrc", "data-c", contribMode); }
+      if(ok(m.creditMode, ["epf","monthly"]))           { creditMode = m.creditMode;   setSeg("creditmode", "data-cm", creditMode); }
+      if(ok(m.lumpKind, ["topup","bonus"]))             { lumpKind = m.lumpKind;       setSeg("lumpkind", "data-l", lumpKind); }
+      if(ok(m.rateMode, ["fixed","avg","trend","replay"])){ rateMode = m.rateMode;     setSeg("ratemodes", "data-m", rateMode); }
+      if(ok(m.portfolio, ["sk","ss"]))                  { portfolio = m.portfolio;     setSeg("portfolio", "data-f", portfolio); }
+      if(ok(m.nationality, ["my","nm"]))                { nationality = m.nationality; setSeg("nationality", "data-n", nationality); }
+      if(ok(m.windowN, [0, 5, 10, 20]))                 { windowN = m.windowN;         setSeg("window", "data-w", windowN); }
       if(o.theme) setTheme(o.theme);
       SLIDER_KEYS.forEach(pushToSlider);
       return true;
